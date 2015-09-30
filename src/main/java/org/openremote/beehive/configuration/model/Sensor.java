@@ -1,3 +1,7 @@
+package org.openremote.beehive.configuration.model;
+
+import javax.persistence.*;
+
 /*
  * OpenRemote, the Home of the Digital Home.
  * Copyright 2008-2014, OpenRemote Inc.
@@ -18,21 +22,22 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openremote.beehive.configuration.model;
-import javax.persistence.*;
-
 @Entity
-@Table(name = "device")
-public class Device extends AbstractEntity {
-
+@Table(name = "sensor")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "dtype")
+@DiscriminatorValue("SIMPLE_SENSOR")
+public class Sensor extends AbstractEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "vendor")
-    private String vendor;
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "type")
+    private SensorType sensorType;
 
-    @Column(name = "model")
-    private String model;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_oid")
+    private Device device;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_oid")
@@ -46,20 +51,20 @@ public class Device extends AbstractEntity {
         this.name = name;
     }
 
-    public String getVendor() {
-        return vendor;
+    public SensorType getSensorType() {
+        return sensorType;
     }
 
-    public void setVendor(String vendor) {
-        this.vendor = vendor;
+    public void setSensorType(SensorType sensorType) {
+        this.sensorType = sensorType;
     }
 
-    public String getModel() {
-        return model;
+    public Device getDevice() {
+        return device;
     }
 
-    public void setModel(String model) {
-        this.model = model;
+    public void setDevice(Device device) {
+        this.device = device;
     }
 
     public Account getAccount() {

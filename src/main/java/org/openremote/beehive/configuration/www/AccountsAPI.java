@@ -43,28 +43,27 @@ public class AccountsAPI {
     AccountRepository accountRepository;
 
 
-    @GET
-    @Path("/{accountId}")
-    public AccountDTO getAccountById(@PathParam("accountId") Long accountId) {
+    private Account getAccountOrThrow(@PathParam("accountId") Long accountId) {
         Account account = accountRepository.findOne(accountId);
         if (account == null) {
             throw new NotFoundException();
         }
-        return new AccountDTO();
+        return account;
     }
 
-    @Path("/devices")
-    public DevicesAPI getDevices() {
+    @GET
+    @Path("/{accountId}")
+    public AccountDTO getAccountById(@PathParam("accountId") Long accountId) {
+        Account account = getAccountOrThrow(accountId);
+        return new AccountDTO(account);
+    }
+
+    @Path("/{accountId}/devices")
+    public DevicesAPI getDevices(@PathParam("accountId") Long accountId) {
         DevicesAPI resource = resourceContext.getResource(DevicesAPI.class);
-        resource.setName("Denis");
+        Account account = getAccountOrThrow(accountId);
+        resource.setAccount(account);
         return resource;
     }
 
-
-    @POST
-    @Path("/")
-    public AccountDTO createAccount() {
-        Account account = accountRepository.save(new Account());
-        return new AccountDTO();
-    }
 }

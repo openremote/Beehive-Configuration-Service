@@ -1,11 +1,6 @@
-package org.openremote.beehive.configuration.www.dto;
+package org.openremote.beehive.configuration.model;
 
-import org.openremote.beehive.configuration.model.Account;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.Map;
+import javax.persistence.*;
 
 /*
  * OpenRemote, the Home of the Digital Home.
@@ -27,15 +22,38 @@ import java.util.Map;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-@XmlRootElement
-public class AccountDTO {
-    private final Account account;
+@Entity
+@Table(name = "state")
+public class SensorState extends AbstractEntity {
+    @Column(name = "name")
+    private String name;
+    @Column(name = "value")
+    private String value;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sensor_oid")
+    private Sensor sensor;
 
-    public AccountDTO(Account account) {
-        this.account = account;
+    public String getName() {
+        return name;
     }
 
-    public Long getId(){
-        return account.getId();
-    };
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public Sensor getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(Sensor sensor) {
+        this.sensor = sensor;
+    }
 }

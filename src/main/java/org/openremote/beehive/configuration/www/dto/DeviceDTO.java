@@ -1,7 +1,10 @@
 package org.openremote.beehive.configuration.www.dto;
 
+import org.openremote.beehive.configuration.model.Device;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.function.Function;
 
 /*
  * OpenRemote, the Home of the Digital Home.
@@ -25,6 +28,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class DeviceDTO {
+    private final Device device;
+
+    public DeviceDTO(Device device) {
+        this.device = device;
+    }
+
     @XmlElement
     public Long getId() {
         return 1L;
@@ -44,4 +53,6 @@ public class DeviceDTO {
     public String getModel() {
         return "";
     }
+
+
 }

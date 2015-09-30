@@ -1,3 +1,7 @@
+package org.openremote.beehive.configuration.model;
+
+import javax.persistence.*;
+
 /*
  * OpenRemote, the Home of the Digital Home.
  * Copyright 2008-2014, OpenRemote Inc.
@@ -18,25 +22,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openremote.beehive.configuration.model;
-import javax.persistence.*;
-
 @Entity
-@Table(name = "device")
-public class Device extends AbstractEntity {
-
+@Table(name = "device_command")
+public class Command extends AbstractEntity {
     @Column(name = "name")
     private String name;
-
-    @Column(name = "vendor")
-    private String vendor;
-
-    @Column(name = "model")
-    private String model;
-
+    private String sectionId;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_oid")
-    private Account account;
+    private Device device;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Protocol protocol;
 
     public String getName() {
         return name;
@@ -46,27 +41,27 @@ public class Device extends AbstractEntity {
         this.name = name;
     }
 
-    public String getVendor() {
-        return vendor;
+    public String getSectionId() {
+        return sectionId;
     }
 
-    public void setVendor(String vendor) {
-        this.vendor = vendor;
+    public void setSectionId(String sectionId) {
+        this.sectionId = sectionId;
     }
 
-    public String getModel() {
-        return model;
+    public Device getDevice() {
+        return device;
     }
 
-    public void setModel(String model) {
-        this.model = model;
+    public void setDevice(Device device) {
+        this.device = device;
     }
 
-    public Account getAccount() {
-        return account;
+    public Protocol getProtocol() {
+        return protocol;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setProtocol(Protocol protocol) {
+        this.protocol = protocol;
     }
 }

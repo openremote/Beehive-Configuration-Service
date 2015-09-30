@@ -20,28 +20,55 @@
  */
 package org.openremote.beehive.configuration.www;
 
+import org.openremote.beehive.configuration.exception.NotFoundException;
+import org.openremote.beehive.configuration.model.Account;
+import org.openremote.beehive.configuration.model.Device;
+import org.openremote.beehive.configuration.www.dto.DeviceDTO;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("prototype")
 @Path("/devices")
 public class DevicesAPI {
-    private String name;
+    private Account account;
 
-    public String getName() {
-        return name;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     @GET
-    public String message() {
-        return "Hello " + name;
+    public Collection<DeviceDTO> list() {
+        Collection<Device> devices = account.getDevices();
+        return devices
+                .stream()
+                .map(device -> new DeviceDTO(device))
+                .collect(Collectors.toList());
+    }
+
+    @GET
+    @Path("/{deviceId}")
+    public DeviceDTO getById(@PathParam("deviceId")Long deviceId) {
+        Collection<Device> devices = account.getDevices();
+        Optional<Device> deviceOptional = devices
+                .stream()
+                .filter(device -> device.getId().equals(deviceId))
+                .findFirst();
+        if (!deviceOptional.isPresent()) {
+            throw new NotFoundException();
+        }
+        return new DeviceDTO(deviceOptional.get());
+
     }
 }

@@ -1,11 +1,7 @@
-package org.openremote.beehive.configuration.www.dto;
+package org.openremote.beehive.configuration.model;
 
-import org.openremote.beehive.configuration.model.Account;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.Map;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /*
  * OpenRemote, the Home of the Digital Home.
@@ -27,15 +23,7 @@ import java.util.Map;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-@XmlRootElement
-public class AccountDTO {
-    private final Account account;
-
-    public AccountDTO(Account account) {
-        this.account = account;
-    }
-
-    public Long getId(){
-        return account.getId();
-    };
+@Entity
+@Table(name = "protocol")
+public class ProtocolAttribute extends AbstractEntity {
 }

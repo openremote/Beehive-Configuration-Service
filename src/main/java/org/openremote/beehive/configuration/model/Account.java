@@ -19,18 +19,26 @@ package org.openremote.beehive.configuration.model;/*
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Entity
 @Table(name = "device")
-public class Account {
-    @Id
-    @GeneratedValue
-    private Long id;
+public class Account extends AbstractEntity {
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private Collection<Device> devices = new ArrayList<>();
 
-    private String name;
+    public Collection<Device> getDevices() {
+        return devices;
+    }
 
+    public void setDevices(Collection<Device> devices) {
+        if (this.devices != devices) {
+            this.devices.clear();
+            if (devices != null) {
+                this.devices.addAll(devices);
+            }
+        }
+    }
 }

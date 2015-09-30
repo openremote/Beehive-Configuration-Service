@@ -1,11 +1,9 @@
-package org.openremote.beehive.configuration.www.dto;
+package org.openremote.beehive.configuration.model;
 
-import org.openremote.beehive.configuration.model.Account;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.Map;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 
 /*
  * OpenRemote, the Home of the Digital Home.
@@ -27,15 +25,30 @@ import java.util.Map;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-@XmlRootElement
-public class AccountDTO {
-    private final Account account;
+@MappedSuperclass
+public class AbstractEntity {
+    @Id
+    @GeneratedValue
+    @Column(name = "oid")
+    private Long id;
 
-    public AccountDTO(Account account) {
-        this.account = account;
+    public Long getId() {
+        return id;
     }
 
-    public Long getId(){
-        return account.getId();
-    };
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractEntity)) return false;
+
+        AbstractEntity that = (AbstractEntity) o;
+
+        return !(id != null ? !id.equals(that.id) : that.id != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }
