@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 @Component
 @Scope("prototype")
 @Path("/devices")
-@Transactional
 public class DevicesAPI {
     private Account account;
 
