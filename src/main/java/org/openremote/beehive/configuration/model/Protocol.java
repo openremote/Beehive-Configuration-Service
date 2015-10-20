@@ -2,6 +2,7 @@ package org.openremote.beehive.configuration.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class Protocol extends AbstractEntity {
     @Column(name = "type")
     private String type;
 
-    @OneToMany
+    @OneToMany(mappedBy = "protocol", fetch = FetchType.EAGER)
     private Collection<ProtocolAttribute> attributes = new ArrayList<>();
 
     public String getType() {

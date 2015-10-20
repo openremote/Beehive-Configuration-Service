@@ -1,6 +1,10 @@
 package org.openremote.beehive.configuration.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /*
@@ -24,6 +28,46 @@ import javax.persistence.Table;
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 @Entity
-@Table(name = "protocol")
+@Table(name = "protocol_attr")
 public class ProtocolAttribute extends AbstractEntity {
+
+  @Column(name = "name")
+  private String name;
+
+  @Column(name = "value")
+  private String value;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "protocol_oid")
+  private Protocol protocol;
+
+  public String getName()
+  {
+    return name;
+  }
+
+  public void setName(String name)
+  {
+    this.name = name;
+  }
+
+  public String getValue()
+  {
+    return value;
+  }
+
+  public void setValue(String value)
+  {
+    this.value = value;
+  }
+
+  public Protocol getProtocol()
+  {
+    return protocol;
+  }
+
+  public void setProtocol(Protocol protocol)
+  {
+    this.protocol = protocol;
+  }
 }

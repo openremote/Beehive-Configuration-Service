@@ -27,10 +27,16 @@ import javax.persistence.*;
 public class Command extends AbstractEntity {
     @Column(name = "name")
     private String name;
+
+    @Column(name= "sectionid") // Do not use camelCase or Spring reformats to snake_case
     private String sectionId;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_oid")
     private Device device;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "protocol_oid")
     private Protocol protocol;
 
     public String getName() {

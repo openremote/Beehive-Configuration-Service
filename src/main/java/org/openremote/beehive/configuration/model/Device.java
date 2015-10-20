@@ -20,6 +20,8 @@
  */
 package org.openremote.beehive.configuration.model;
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Entity
 @Table(name = "device")
@@ -37,6 +39,27 @@ public class Device extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_oid")
     private Account account;
+
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    private Collection<Command> commands = new ArrayList<>();
+
+    public Collection<Command> getCommands() {
+        return commands;
+    }
+
+    public void setCommands(Collection<Command> commands) {
+        if (this.commands != commands) {
+            this.commands.clear();
+            if (commands != null) {
+                this.commands.addAll(commands);
+            }
+        }
+    }
+
+    public void addCommand(Command command) {
+        this.commands.add(command);
+        command.setDevice(this);
+    }
 
     public String getName() {
         return name;
