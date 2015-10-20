@@ -74,7 +74,9 @@ public class AccountsAPI {
     @Path("/{accountId}")
     public AccountDTO getAccountById(@PathParam("accountId") Long accountId) {
         Account account = getAccountOrThrow(accountId);
-        return new AccountDTO();
+        AccountDTO accountDTO = new AccountDTO();
+        accountDTO.setId(account.getId());
+        return accountDTO;
     }
 
     @POST
