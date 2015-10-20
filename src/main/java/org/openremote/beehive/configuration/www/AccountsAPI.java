@@ -25,17 +25,23 @@ import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.repository.AccountRepository;
 import org.openremote.beehive.configuration.www.dto.AccountDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.transaction.Transactional;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Path("/accounts")
+@Scope("prototype")
 public class AccountsAPI {
     @Context
     private ResourceContext resourceContext;
@@ -52,10 +58,33 @@ public class AccountsAPI {
     }
 
     @GET
+    public List<AccountDTO> list() {
+        List<AccountDTO> result = new ArrayList<>();
+        Iterable<Account> all = accountRepository.findAll();
+        for (Account account : all) {
+            AccountDTO accountDTO = new AccountDTO();
+            accountDTO.setName(account.getName());
+            accountDTO.setId(account.getId());
+            result.add(accountDTO);
+        }
+        return result;
+    }
+
+
+    @GET
     @Path("/{accountId}")
     public AccountDTO getAccountById(@PathParam("accountId") Long accountId) {
         Account account = getAccountOrThrow(accountId);
-        return new AccountDTO(account);
+        return new AccountDTO();
+    }
+
+    @POST
+    @Path("/{accountId}")
+    public AccountDTO createAccountById(@PathParam("accountId") Long accountId, AccountDTO accountDTO) {
+        Account account = new Account();
+        account.setName(accountDTO.getName());
+        accountRepository.save(account);
+        return new AccountDTO();
     }
 
     @Path("/{accountId}/devices")

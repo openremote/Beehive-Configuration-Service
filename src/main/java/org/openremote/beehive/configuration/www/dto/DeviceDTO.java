@@ -27,32 +27,12 @@ import java.util.function.Function;
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 @XmlRootElement
-public class DeviceDTO {
-    private final Device device;
+public interface DeviceDTO {
+    public Long getId();
 
-    public DeviceDTO(Device device) {
-        this.device = device;
-    }
+    public String getName();
 
-    @XmlElement
-    public Long getId() {
-        return 1L;
-    }
+    public String getVendor();
 
-    @XmlElement
-    public String getName() {
-        return "";
-    }
-
-    @XmlElement
-    public String getVendor() {
-        return "";
-    }
-
-    @XmlElement
-    public String getModel() {
-        return "";
-    }
-
-
+    public String getModel();
 }

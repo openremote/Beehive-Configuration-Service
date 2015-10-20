@@ -1,13 +1,6 @@
 package org.openremote.beehive.configuration.www.dto;
 
-import org.openremote.beehive.configuration.model.Account;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.Map;
+import org.openremote.beehive.configuration.model.Device;
 
 /*
  * OpenRemote, the Home of the Digital Home.
@@ -29,26 +22,30 @@ import java.util.Map;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-@XmlRootElement(name = "account")
-public class AccountDTO {
+public class DeviceDTOOut implements DeviceDTO {
+    private final Device device;
 
-    private Long id;
-    private String name;
+    public DeviceDTOOut(Device device) {
+        this.device = device;
+    }
 
-    @XmlAttribute(name = "id")
+    @Override
     public Long getId() {
-        return id;
+        return device.getId();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-    @XmlAttribute(name = "name")
+    @Override
     public String getName() {
-        return name;
+        return device.getName();
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public String getVendor() {
+        return device.getVendor();
+    }
+
+    @Override
+    public String getModel() {
+        return device.getModel();
     }
 }

@@ -24,8 +24,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 @Entity
-@Table(name = "device")
+@Table(name = "account")
 public class Account extends AbstractEntity {
+
+    private String name;
+
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
     private Collection<Device> devices = new ArrayList<>();
 
@@ -40,5 +43,18 @@ public class Account extends AbstractEntity {
                 this.devices.addAll(devices);
             }
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void addDevice(Device device) {
+        this.devices.add(device);
+        device.setAccount(this);
     }
 }

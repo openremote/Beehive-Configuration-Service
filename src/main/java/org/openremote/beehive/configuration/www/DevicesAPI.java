@@ -24,10 +24,14 @@ import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.model.Device;
 import org.openremote.beehive.configuration.www.dto.DeviceDTO;
+import org.openremote.beehive.configuration.www.dto.DeviceDTOIn;
+import org.openremote.beehive.configuration.www.dto.DeviceDTOOut;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.util.Collection;
@@ -37,6 +41,7 @@ import java.util.stream.Collectors;
 @Component
 @Scope("prototype")
 @Path("/devices")
+@Transactional
 public class DevicesAPI {
     private Account account;
 
@@ -49,17 +54,17 @@ public class DevicesAPI {
     }
 
     @GET
-    public Collection<DeviceDTO> list() {
+    public Collection<DeviceDTOOut> list() {
         Collection<Device> devices = account.getDevices();
         return devices
                 .stream()
-                .map(device -> new DeviceDTO(device))
+                .map(device -> new DeviceDTOOut(device))
                 .collect(Collectors.toList());
     }
 
     @GET
     @Path("/{deviceId}")
-    public DeviceDTO getById(@PathParam("deviceId")Long deviceId) {
+    public DeviceDTOOut getById(@PathParam("deviceId")Long deviceId) {
         Collection<Device> devices = account.getDevices();
         Optional<Device> deviceOptional = devices
                 .stream()
@@ -68,7 +73,16 @@ public class DevicesAPI {
         if (!deviceOptional.isPresent()) {
             throw new NotFoundException();
         }
-        return new DeviceDTO(deviceOptional.get());
+        return new DeviceDTOOut(deviceOptional.get());
 
+    }
+
+
+    @POST
+    public DeviceDTOOut createDevice(DeviceDTOIn deviceDTO) {
+        Device newDevice = new Device();
+        newDevice.setName(deviceDTO.getName());
+        account.addDevice(newDevice);
+        return new DeviceDTOOut(newDevice);
     }
 }

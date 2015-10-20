@@ -1,13 +1,12 @@
-package org.openremote.beehive.configuration.www.dto;
+package org.openremote.beehive.configuration;
 
-import org.openremote.beehive.configuration.model.Account;
+import org.hibernate.SessionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.hibernate4.support.OpenSessionInViewFilter;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.Map;
+import javax.inject.Inject;
 
 /*
  * OpenRemote, the Home of the Digital Home.
@@ -29,26 +28,11 @@ import java.util.Map;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-@XmlRootElement(name = "account")
-public class AccountDTO {
+@Configuration
+public class JpaConfig {
 
-    private Long id;
-    private String name;
-
-    @XmlAttribute(name = "id")
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-    @XmlAttribute(name = "name")
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    @Bean
+    public OpenEntityManagerInViewFilter getOpenSessionInViewFilter() {
+        return new OpenEntityManagerInViewFilter();
     }
 }
