@@ -20,6 +20,7 @@
  */
 package org.openremote.beehive.configuration.www;
 
+import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Command;
 import org.openremote.beehive.configuration.model.Device;
 import org.openremote.beehive.configuration.www.dto.CommandDTO;
@@ -28,7 +29,10 @@ import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -53,6 +57,24 @@ public class CommandsAPI {
             .stream()
             .map(command -> new CommandDTO(command))
             .collect(Collectors.toList());
+  }
+
+  @GET
+  @Path("/{commandId}")
+  public CommandDTO getById(@PathParam("commandId")Long commandId) {
+    return new CommandDTO(getCommandById(commandId));
+  }
+
+  private Command getCommandById(Long commandId) {
+    Collection<Command> commands = device.getCommands();
+    Optional<Command> commandOptional = commands
+            .stream()
+            .filter(command -> command.getId().equals(commandId))
+            .findFirst();
+    if (!commandOptional.isPresent()) {
+      throw new NotFoundException();
+    }
+    return commandOptional.get();
   }
 
 }
