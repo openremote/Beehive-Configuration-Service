@@ -33,7 +33,6 @@ import java.util.Map;
 public class AccountDTO {
 
     private Long id;
-    private String name;
 
     @XmlAttribute(name = "id")
     public Long getId() {
@@ -42,13 +41,5 @@ public class AccountDTO {
 
     public void setId(Long id) {
         this.id = id;
-    }
-    @XmlAttribute(name = "name")
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 }

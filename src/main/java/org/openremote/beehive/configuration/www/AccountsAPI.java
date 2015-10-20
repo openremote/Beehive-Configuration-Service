@@ -63,7 +63,6 @@ public class AccountsAPI {
         Iterable<Account> all = accountRepository.findAll();
         for (Account account : all) {
             AccountDTO accountDTO = new AccountDTO();
-            accountDTO.setName(account.getName());
             accountDTO.setId(account.getId());
             result.add(accountDTO);
         }
@@ -82,7 +81,6 @@ public class AccountsAPI {
     @Path("/{accountId}")
     public AccountDTO createAccountById(@PathParam("accountId") Long accountId, AccountDTO accountDTO) {
         Account account = new Account();
-        account.setName(accountDTO.getName());
         accountRepository.save(account);
         return new AccountDTO();
     }
