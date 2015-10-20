@@ -20,10 +20,39 @@
  */
 package org.openremote.beehive.configuration.www;
 
+import org.openremote.beehive.configuration.model.Command;
+import org.openremote.beehive.configuration.model.Device;
+import org.openremote.beehive.configuration.www.dto.CommandDTO;
+import org.openremote.beehive.configuration.www.dto.DeviceDTOOut;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
+import javax.ws.rs.GET;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Component
 public class CommandsAPI {
+
+  private Device device;
+
+  public Device getDevice()
+  {
+    return device;
+  }
+
+  public void setDevice(Device device)
+  {
+    this.device = device;
+  }
+
+  @GET
+  public Collection<CommandDTO> list() {
+    Collection<Command> commands = device.getCommands();
+    return commands
+            .stream()
+            .map(command -> new CommandDTO(command))
+            .collect(Collectors.toList());
+  }
+
 }

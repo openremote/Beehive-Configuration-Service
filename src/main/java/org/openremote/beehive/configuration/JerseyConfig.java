@@ -22,7 +22,9 @@ package org.openremote.beehive.configuration;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.openremote.beehive.configuration.www.AccountsAPI;
+import org.openremote.beehive.configuration.www.CommandsAPI;
 import org.openremote.beehive.configuration.www.DevicesAPI;
+import org.openremote.beehive.configuration.www.SensorsAPI;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,5 +32,7 @@ public class JerseyConfig extends ResourceConfig {
     public JerseyConfig() {
         register(DevicesAPI.class);
         register(AccountsAPI.class);
+        register(CommandsAPI.class);
+        register(SensorsAPI.class);
     }
 }

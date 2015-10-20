@@ -34,6 +34,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.container.ResourceContext;
+import javax.ws.rs.core.Context;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,6 +44,10 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 @Path("/devices")
 public class DevicesAPI {
+
+    @Context
+    private ResourceContext resourceContext;
+
     private Account account;
 
     public Account getAccount() {
@@ -64,15 +70,7 @@ public class DevicesAPI {
     @GET
     @Path("/{deviceId}")
     public DeviceDTOOut getById(@PathParam("deviceId")Long deviceId) {
-        Collection<Device> devices = account.getDevices();
-        Optional<Device> deviceOptional = devices
-                .stream()
-                .filter(device -> device.getId().equals(deviceId))
-                .findFirst();
-        if (!deviceOptional.isPresent()) {
-            throw new NotFoundException();
-        }
-        return new DeviceDTOOut(deviceOptional.get());
+        return new DeviceDTOOut(getDeviceById(deviceId));
 
     }
 
@@ -84,4 +82,24 @@ public class DevicesAPI {
         account.addDevice(newDevice);
         return new DeviceDTOOut(newDevice);
     }
+
+    @Path("/{deviceId}/commands")
+    public CommandsAPI getCommands(@PathParam("deviceId") Long deviceId) {
+        CommandsAPI resource = resourceContext.getResource(CommandsAPI.class);
+        resource.setDevice(getDeviceById(deviceId));
+        return resource;
+    }
+
+    private Device getDeviceById(Long deviceId) {
+        Collection<Device> devices = account.getDevices();
+        Optional<Device> deviceOptional = devices
+                .stream()
+                .filter(device -> device.getId().equals(deviceId))
+                .findFirst();
+        if (!deviceOptional.isPresent()) {
+            throw new NotFoundException();
+        }
+        return deviceOptional.get();
+    }
+
 }

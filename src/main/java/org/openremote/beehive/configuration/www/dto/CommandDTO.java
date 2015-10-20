@@ -1,8 +1,13 @@
 package org.openremote.beehive.configuration.www.dto;
 
+import org.openremote.beehive.configuration.model.Command;
+import org.openremote.beehive.configuration.model.ProtocolAttribute;
+
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /*
@@ -27,23 +32,79 @@ import java.util.Map;
  */
 @XmlRootElement
 public class CommandDTO {
-    public Long getId() {
-        return 1L;
-    }
-    public String getName() {
-        return "";
+
+    private Long id;
+    private String name;
+    private String protocol;
+
+    private Map<String, String> properties = new HashMap<String, String>();
+    private Collection<String> tags = new HashSet<String>();
+
+    public Long getId()
+    {
+        return id;
     }
 
-    public String getProtocol() {
-        return "";
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public String getProtocol()
+    {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol)
+    {
+        this.protocol = protocol;
     }
 
     public Map<String,String> getProperties() {
-        return Collections.singletonMap("Hello", "World");
+        return properties;
+    }
+
+    public void addProperty(String propertyName, String propertyValue) {
+        this.properties.put(propertyName, propertyValue);
     }
 
     public Collection<String> getTags() {
-        return Collections.emptyList();
+        return tags;
     }
 
+    public void addTag(String tagValue) {
+        this.tags.add(tagValue);
+    }
+
+    public CommandDTO(Command command)
+    {
+        setId(command.getId());
+        setName(command.getName());
+        setProtocol(command.getProtocol().getType());
+
+        if (command.getSectionId() != null && !"".equals(command.getSectionId())) {
+            addProperty("urn:openremote:device-command:lirc:section-id", command.getSectionId());
+        }
+
+        Collection<ProtocolAttribute> attributes = command.getProtocol().getAttributes();
+
+        attributes.forEach(attribute -> {
+            if ("urn:openremote:device-command:tag".equals(attribute.getName())) {
+                addTag(attribute.getValue());
+            } else {
+                addProperty(attribute.getName(), attribute.getValue());
+            }
+        });
+
+    }
 }
