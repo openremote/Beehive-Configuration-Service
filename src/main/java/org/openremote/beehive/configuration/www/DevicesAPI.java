@@ -20,22 +20,34 @@
  */
 package org.openremote.beehive.configuration.www;
 
+import org.openremote.beehive.configuration.exception.ConflictException;
 import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.model.Device;
+import org.openremote.beehive.configuration.repository.AccountRepository;
+import org.openremote.beehive.configuration.repository.DeviceRepository;
 import org.openremote.beehive.configuration.www.dto.DeviceDTO;
 import org.openremote.beehive.configuration.www.dto.DeviceDTOIn;
 import org.openremote.beehive.configuration.www.dto.DeviceDTOOut;
+import org.openremote.beehive.configuration.www.dto.ErrorDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.transaction.Transactional;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,6 +59,15 @@ public class DevicesAPI {
 
     @Context
     private ResourceContext resourceContext;
+
+    @Autowired
+    PlatformTransactionManager platformTransactionManager;
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    @Autowired
+    DeviceRepository deviceRepository;
 
     private Account account;
 
@@ -74,13 +95,73 @@ public class DevicesAPI {
 
     }
 
-
     @POST
-    public DeviceDTOOut createDevice(DeviceDTOIn deviceDTO) {
-        Device newDevice = new Device();
-        newDevice.setName(deviceDTO.getName());
-        account.addDevice(newDevice);
-        return new DeviceDTOOut(newDevice);
+    public Response createDevice(DeviceDTOIn deviceDTO) {
+        if (deviceRepository.findByName(deviceDTO.getName()) != null)
+        {
+            return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+        }
+
+        return Response.ok(new DeviceDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Device>()
+        {
+            @Override
+            public Device doInTransaction(TransactionStatus transactionStatus)
+            {
+                Device newDevice = new Device();
+                newDevice.setName(deviceDTO.getName());
+                newDevice.setModel(deviceDTO.getModel());
+                newDevice.setVendor(deviceDTO.getVendor());
+                account.addDevice(newDevice);
+                deviceRepository.save(newDevice);
+                return newDevice;
+            }
+        }))).build();
+    }
+
+    @PUT
+    @Path("/{deviceId}")
+    public Response udpateDevice(@PathParam("deviceId")Long deviceId, DeviceDTOIn deviceDTO) {
+        Device existingDevice = getDeviceById(deviceId);
+
+        Device deviceWithSameName = deviceRepository.findByName(deviceDTO.getName());
+
+        if (deviceWithSameName != null && !deviceWithSameName.getId().equals(existingDevice.getId()))
+        {
+            return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+        }
+
+        return Response.ok(new DeviceDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Device>()
+        {
+            @Override
+            public Device doInTransaction(TransactionStatus transactionStatus)
+            {
+                existingDevice.setName(deviceDTO.getName());
+                existingDevice.setModel(deviceDTO.getModel());
+                existingDevice.setVendor(deviceDTO.getVendor());
+                deviceRepository.save(existingDevice);
+                return existingDevice;
+            }
+        }))).build();
+    }
+
+    @DELETE
+    @Path("/{deviceId}")
+    public Response deleteDevice(@PathParam("deviceId")Long deviceId) {
+        Device existingDevice = getDeviceById(deviceId);
+
+        new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Object>()
+        {
+            @Override
+            public Object doInTransaction(TransactionStatus transactionStatus)
+            {
+                account.removeDevice(existingDevice);
+                deviceRepository.delete(existingDevice);
+                return null;
+            }
+        });
+
+        return Response.ok().build();
+
     }
 
     @Path("/{deviceId}/commands")

@@ -47,4 +47,9 @@ public class Account extends AbstractEntity {
         this.devices.add(device);
         device.setAccount(this);
     }
+
+    public void removeDevice(Device device) {
+        this.devices.remove(device);
+        device.setAccount(null);
+    }
 }

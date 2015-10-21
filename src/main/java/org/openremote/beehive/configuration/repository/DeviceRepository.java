@@ -24,4 +24,6 @@ import org.springframework.data.repository.CrudRepository;
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 public interface DeviceRepository extends CrudRepository<Device,Long> {
+
+  Device findByName(String name);
 }
