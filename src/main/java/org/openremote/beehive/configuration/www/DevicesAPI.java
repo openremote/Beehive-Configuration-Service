@@ -20,13 +20,10 @@
  */
 package org.openremote.beehive.configuration.www;
 
-import org.openremote.beehive.configuration.exception.ConflictException;
 import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.model.Device;
-import org.openremote.beehive.configuration.repository.AccountRepository;
 import org.openremote.beehive.configuration.repository.DeviceRepository;
-import org.openremote.beehive.configuration.www.dto.DeviceDTO;
 import org.openremote.beehive.configuration.www.dto.DeviceDTOIn;
 import org.openremote.beehive.configuration.www.dto.DeviceDTOOut;
 import org.openremote.beehive.configuration.www.dto.ErrorDTO;
@@ -38,7 +35,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
