@@ -25,17 +25,17 @@ import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.model.persistence.jpa.MinimalPersistentUser;
 import org.openremote.beehive.configuration.repository.AccountRepository;
 import org.openremote.beehive.configuration.repository.MinimalPersistentUserRepository;
-import org.openremote.beehive.configuration.www.dto.AccountDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.*;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 @Path("/accounts")
@@ -59,37 +59,6 @@ public class AccountsAPI {
             throw new NotFoundException();
         }
         return account;
-    }
-
-    @GET
-    public List<AccountDTO> list() {
-        List<AccountDTO> result = new ArrayList<>();
-        Iterable<Account> all = accountRepository.findAll();
-        for (Account account : all) {
-            AccountDTO accountDTO = new AccountDTO();
-            accountDTO.setId(account.getId());
-            result.add(accountDTO);
-        }
-        return result;
-    }
-
-    @GET
-    @Path("/{accountId}")
-    public AccountDTO getAccountById(@PathParam("accountId") Long accountId) {
-        validateAccountAccess(accountId);
-
-        Account account = getAccountOrThrow(accountId);
-        AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setId(account.getId());
-        return accountDTO;
-    }
-
-    @POST
-    @Path("/{accountId}")
-    public AccountDTO createAccountById(@PathParam("accountId") Long accountId, AccountDTO accountDTO) {
-        Account account = new Account();
-        accountRepository.save(account);
-        return new AccountDTO();
     }
 
     @Path("/{accountId}/devices")
