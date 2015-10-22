@@ -4,4 +4,103 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+
+    <!--
+    =================================================================================================
+
+      Security Configuration
+
+      This configuration section establishes role-based access to (by default) all of the Beehive
+      Configuration Service resources. Each resource access requires at minimum a basic authentication
+      to access, and all access must be established via confidential communication channel (e.g.
+      HTTPS).
+
+      The two roles set up with beehive configuration service access are 'service-admin' and 'account-owner'.
+      The former is used for a typical administrative access. The latter 'account-owner' role
+      should be used by the service implementation to restrict access to the authenticated user's
+      account only.
+
+    =================================================================================================
+    -->
+
+
+    <security-constraint>
+
+        <display-name>Beehive Configuration Service Security</display-name>
+
+        <!--
+             Defines an URL pattern to include all resource access to beehive configuration service.
+             The HTTP method elements are not included meaning all HTTP requests must conform
+             to the configured security constraints...
+        -->
+        <web-resource-collection>
+
+            <web-resource-name>All Service Access to Beehive Configuration Service</web-resource-name>
+
+            <description>
+                This configuration constraints all HTTP method access to all of the device
+                discovery service resources.
+            </description>
+
+            <url-pattern>/*</url-pattern>
+
+        </web-resource-collection>
+
+
+        <!-- User roles required to access device discovery resources... -->
+
+        <auth-constraint>
+            <role-name>account-owner</role-name>
+        </auth-constraint>
+
+        <!-- Enforce HTTPS access... -->
+
+        <!--
+        <user-data-constraint>
+
+            <description>
+                All service access requests must arrive through confidential (HTTPS) communication
+                channel.
+            </description>
+
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+
+        </user-data-constraint>
+
+        -->
+
+    </security-constraint>
+
+
+    <!-- At minimum, require HTTP Basic authorization... -->
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>BeehiveConfigurationService</realm-name>
+    </login-config>
+
+
+    <!-- Define the security roles... -->
+
+    <security-role>
+
+        <description>
+            Service administrators have full access to all operations. Therefore additional
+            security policies should be placed on any login using this role
+            (restricting IP range, etc.)
+        </description>
+
+        <role-name>service-admin</role-name>
+
+    </security-role>
+
+    <security-role>
+
+        <description>
+            Account owner is the basic role required to access a user's own account.
+        </description>
+
+        <role-name>account-owner</role-name>
+
+    </security-role>
 </web-app>
