@@ -25,10 +25,13 @@ import javax.persistence.*;
 @Entity
 @Table(name = "state")
 public class SensorState extends AbstractEntity {
+
     @Column(name = "name")
     private String name;
+
     @Column(name = "value")
     private String value;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sensor_oid")
     private Sensor sensor;

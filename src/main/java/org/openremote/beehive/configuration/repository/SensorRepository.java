@@ -18,20 +18,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openremote.beehive.configuration.www.dto;
+package org.openremote.beehive.configuration.repository;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Map;
+import org.openremote.beehive.configuration.model.Sensor;
+import org.springframework.data.repository.CrudRepository;
 
-@XmlRootElement
-public interface SensorDTO {
-
-  Long getId();
-  String getName();
-  String getType();
-  Long getCommandId();
-  Integer getMinValue();
-  Integer getMaxValue();
-  Map<String, String> getStates();
-
+public interface SensorRepository extends CrudRepository<Sensor,Long>
+{
 }

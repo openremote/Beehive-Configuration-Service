@@ -167,6 +167,13 @@ public class DevicesAPI {
         return resource;
     }
 
+    @Path("/{deviceId}/sensors")
+    public SensorsAPI getSensors(@PathParam("deviceId") Long deviceId) {
+        SensorsAPI resource = resourceContext.getResource(SensorsAPI.class);
+        resource.setDevice(getDeviceById(deviceId));
+        return resource;
+    }
+
     private Device getDeviceById(Long deviceId) {
         Collection<Device> devices = account.getDevices();
         Optional<Device> deviceOptional = devices

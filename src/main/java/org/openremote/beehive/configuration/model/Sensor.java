@@ -21,6 +21,8 @@
 package org.openremote.beehive.configuration.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Entity
 @Table(name = "sensor")
@@ -28,6 +30,7 @@ import javax.persistence.*;
 @DiscriminatorColumn(name = "dtype")
 @DiscriminatorValue("SIMPLE_SENSOR")
 public class Sensor extends AbstractEntity {
+
     @Column(name = "name")
     private String name;
 
@@ -42,6 +45,21 @@ public class Sensor extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_oid")
     private Account account;
+
+    @OneToMany(mappedBy = "sensor", fetch = FetchType.LAZY)
+    private Collection<SensorState> states = new ArrayList<>();
+
+    @OneToOne(mappedBy = "sensor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private SensorCommandReference sensorCommandReference;
+
+    public Sensor()
+    {
+    }
+
+    public Sensor(SensorType sensorType)
+    {
+        this.sensorType = sensorType;
+    }
 
     public String getName() {
         return name;
@@ -73,5 +91,30 @@ public class Sensor extends AbstractEntity {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public Collection<SensorState> getStates()
+    {
+        return states;
+    }
+
+    public void setStates(Collection<SensorState> states)
+    {
+        if (this.states != states) {
+            this.states.clear();
+            if (states != null) {
+                this.states.addAll(states);
+            }
+        }
+    }
+
+    public SensorCommandReference getSensorCommandReference()
+    {
+        return sensorCommandReference;
+    }
+
+    public void setSensorCommandReference(SensorCommandReference sensorCommandReference)
+    {
+        this.sensorCommandReference = sensorCommandReference;
     }
 }

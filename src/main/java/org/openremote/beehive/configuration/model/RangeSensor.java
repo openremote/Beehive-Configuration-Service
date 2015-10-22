@@ -26,11 +26,15 @@ import javax.persistence.*;
 @DiscriminatorValue("RANGE_SENSOR")
 @SecondaryTable(name = "range_sensor", pkJoinColumns = @PrimaryKeyJoinColumn(name = "oid"))
 public class RangeSensor extends Sensor {
-    @Column(name = "max_value")
+    @Column(table = "range_sensor", name = "max_value")
     private Integer maxValue;
 
-    @Column(name = "min_value")
+    @Column(table = "range_sensor", name = "min_value")
     private Integer minValue;
+
+    public RangeSensor() {
+        super(SensorType.RANGE);
+    }
 
     public Integer getMaxValue() {
         return maxValue;

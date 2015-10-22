@@ -20,11 +20,78 @@
  */
 package org.openremote.beehive.configuration.www;
 
+import org.openremote.beehive.configuration.exception.NotFoundException;
+import org.openremote.beehive.configuration.model.Command;
+import org.openremote.beehive.configuration.model.Device;
+import org.openremote.beehive.configuration.model.Sensor;
+import org.openremote.beehive.configuration.repository.CommandRepository;
+import org.openremote.beehive.configuration.repository.ProtocolRepository;
+import org.openremote.beehive.configuration.repository.SensorRepository;
+import org.openremote.beehive.configuration.www.dto.CommandDTOOut;
+import org.openremote.beehive.configuration.www.dto.SensorDTO;
+import org.openremote.beehive.configuration.www.dto.SensorDTOOut;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.transaction.Transactional;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class SensorsAPI {
+
+  @Autowired
+  PlatformTransactionManager platformTransactionManager;
+
+  @Autowired
+  SensorRepository sensorRepository;
+
+  private Device device;
+
+  public Device getDevice()
+  {
+    return device;
+  }
+
+  public void setDevice(Device device)
+  {
+    this.device = device;
+  }
+
+  @GET
+  public Collection<SensorDTOOut> list()
+  {
+    Collection<Sensor> sensors = device.getSensors();
+    return sensors
+            .stream()
+            .map(sensor -> new SensorDTOOut(sensor))
+            .collect(Collectors.toList());
+  }
+
+  @GET
+  @Path("/{sensorId}")
+  public SensorDTOOut getById(@PathParam("sensorId") Long sensorId)
+  {
+    return new SensorDTOOut(getSensorById(sensorId));
+  }
+
+  private Sensor getSensorById(Long sensorId)
+  {
+    Collection<Sensor> sensors = device.getSensors();
+    Optional<Sensor> sensorOptional = sensors
+            .stream()
+            .filter(sensor -> sensor.getId().equals(sensorId))
+            .findFirst();
+    if (!sensorOptional.isPresent())
+    {
+      throw new NotFoundException();
+    }
+    return sensorOptional.get();
+  }
 
 }

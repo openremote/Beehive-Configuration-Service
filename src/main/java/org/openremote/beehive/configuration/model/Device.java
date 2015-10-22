@@ -44,6 +44,9 @@ public class Device extends AbstractEntity {
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private Collection<Command> commands = new ArrayList<>();
 
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    private Collection<Sensor> sensors = new ArrayList<>();
+
     public Collection<Command> getCommands() {
         return commands;
     }
@@ -65,6 +68,21 @@ public class Device extends AbstractEntity {
     public void removeCommand(Command command) {
         this.commands.remove(command);
         command.setDevice(null);
+    }
+
+    public Collection<Sensor> getSensors()
+    {
+        return sensors;
+    }
+
+    public void setSensors(Collection<Sensor> sensors)
+    {
+        if (this.sensors != sensors) {
+            this.sensors.clear();
+            if (sensors != null) {
+                this.sensors.addAll(sensors);
+            }
+        }
     }
 
     public String getName() {

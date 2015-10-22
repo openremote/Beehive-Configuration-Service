@@ -18,20 +18,37 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openremote.beehive.configuration.www.dto;
+package org.openremote.beehive.configuration.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Map;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
-@XmlRootElement
-public interface SensorDTO {
+@Entity
+@Table(name = "command_ref_item")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type")
+@DiscriminatorValue("COMMAND_REF_ITEM")
+public class CommandReference extends AbstractEntity
+{
 
-  Long getId();
-  String getName();
-  String getType();
-  Long getCommandId();
-  Integer getMinValue();
-  Integer getMaxValue();
-  Map<String, String> getStates();
+  @ManyToOne
+  @JoinColumn(name = "target_device_command_oid")
+  private Command command;
+
+  public Command getCommand()
+  {
+    return command;
+  }
+
+  public void setCommand(Command command)
+  {
+    this.command = command;
+  }
 
 }
