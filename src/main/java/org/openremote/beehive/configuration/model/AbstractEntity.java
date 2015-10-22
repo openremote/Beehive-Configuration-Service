@@ -1,13 +1,6 @@
-package org.openremote.beehive.configuration.model;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-
 /*
  * OpenRemote, the Home of the Digital Home.
- * Copyright 2008-2014, OpenRemote Inc.
+ * Copyright 2008-2015, OpenRemote Inc.
  *
  * See the contributors.txt file in the distribution for a
  * full listing of individual contributors.
@@ -25,6 +18,13 @@ import javax.persistence.MappedSuperclass;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration.model;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
 @MappedSuperclass
 public class AbstractEntity {
     @Id

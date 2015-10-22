@@ -1,7 +1,3 @@
-package org.openremote.beehive.configuration.www.dto;
-
-import javax.xml.bind.annotation.XmlRootElement;
-
 /*
  * OpenRemote, the Home of the Digital Home.
  * Copyright 2008-2015, OpenRemote Inc.
@@ -22,6 +18,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration.www.dto;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
 @XmlRootElement
 public class ErrorDTO
 {

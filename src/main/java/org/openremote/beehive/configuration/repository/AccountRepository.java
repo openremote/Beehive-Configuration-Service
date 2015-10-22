@@ -1,7 +1,6 @@
-package org.openremote.beehive.configuration.repository;
 /*
  * OpenRemote, the Home of the Digital Home.
- * Copyright 2008-2014, OpenRemote Inc.
+ * Copyright 2008-2015, OpenRemote Inc.
  *
  * See the contributors.txt file in the distribution for a
  * full listing of individual contributors.
@@ -19,6 +18,7 @@ package org.openremote.beehive.configuration.repository;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration.repository;
 
 import org.openremote.beehive.configuration.model.Account;
 import org.springframework.data.repository.CrudRepository;

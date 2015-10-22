@@ -1,14 +1,6 @@
-package org.openremote.beehive.configuration.www.dto;
-
-import org.openremote.beehive.configuration.model.Device;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.function.Function;
-
 /*
  * OpenRemote, the Home of the Digital Home.
- * Copyright 2008-2014, OpenRemote Inc.
+ * Copyright 2008-2015, OpenRemote Inc.
  *
  * See the contributors.txt file in the distribution for a
  * full listing of individual contributors.
@@ -26,6 +18,14 @@ import java.util.function.Function;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration.www.dto;
+
+import org.openremote.beehive.configuration.model.Device;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.function.Function;
+
 @XmlRootElement
 public interface DeviceDTO {
     public Long getId();

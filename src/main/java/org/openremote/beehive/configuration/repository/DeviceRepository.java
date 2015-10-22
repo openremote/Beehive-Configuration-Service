@@ -1,11 +1,6 @@
-package org.openremote.beehive.configuration.repository;
-
-import org.openremote.beehive.configuration.model.Device;
-import org.springframework.data.repository.CrudRepository;
-
 /*
  * OpenRemote, the Home of the Digital Home.
- * Copyright 2008-2014, OpenRemote Inc.
+ * Copyright 2008-2015, OpenRemote Inc.
  *
  * See the contributors.txt file in the distribution for a
  * full listing of individual contributors.
@@ -23,6 +18,11 @@ import org.springframework.data.repository.CrudRepository;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration.repository;
+
+import org.openremote.beehive.configuration.model.Device;
+import org.springframework.data.repository.CrudRepository;
+
 public interface DeviceRepository extends CrudRepository<Device,Long> {
 
   Device findByName(String name);

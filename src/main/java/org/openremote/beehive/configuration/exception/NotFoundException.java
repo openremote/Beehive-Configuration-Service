@@ -1,11 +1,6 @@
-package org.openremote.beehive.configuration.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 /*
  * OpenRemote, the Home of the Digital Home.
- * Copyright 2008-2014, OpenRemote Inc.
+ * Copyright 2008-2015, OpenRemote Inc.
  *
  * See the contributors.txt file in the distribution for a
  * full listing of individual contributors.
@@ -23,6 +18,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class NotFoundException extends RuntimeException {
     public NotFoundException() {

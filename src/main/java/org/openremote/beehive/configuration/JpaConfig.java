@@ -1,16 +1,6 @@
-package org.openremote.beehive.configuration;
-
-import org.hibernate.SessionFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.hibernate4.support.OpenSessionInViewFilter;
-import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
-
-import javax.inject.Inject;
-
 /*
  * OpenRemote, the Home of the Digital Home.
- * Copyright 2008-2014, OpenRemote Inc.
+ * Copyright 2008-2015, OpenRemote Inc.
  *
  * See the contributors.txt file in the distribution for a
  * full listing of individual contributors.
@@ -28,6 +18,16 @@ import javax.inject.Inject;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration;
+
+import org.hibernate.SessionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.hibernate4.support.OpenSessionInViewFilter;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
+
+import javax.inject.Inject;
+
 @Configuration
 public class JpaConfig {
 
