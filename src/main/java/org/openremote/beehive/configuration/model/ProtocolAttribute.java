@@ -1,15 +1,6 @@
-package org.openremote.beehive.configuration.model;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 /*
  * OpenRemote, the Home of the Digital Home.
- * Copyright 2008-2014, OpenRemote Inc.
+ * Copyright 2008-2015, OpenRemote Inc.
  *
  * See the contributors.txt file in the distribution for a
  * full listing of individual contributors.
@@ -27,6 +18,15 @@ import javax.persistence.Table;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.openremote.beehive.configuration.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 @Entity
 @Table(name = "protocol_attr")
 public class ProtocolAttribute extends AbstractEntity {
@@ -40,6 +40,16 @@ public class ProtocolAttribute extends AbstractEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "protocol_oid")
   private Protocol protocol;
+
+  public ProtocolAttribute()
+  {
+  }
+
+  public ProtocolAttribute(String name, String value)
+  {
+    this.name = name;
+    this.value = value;
+  }
 
   public String getName()
   {

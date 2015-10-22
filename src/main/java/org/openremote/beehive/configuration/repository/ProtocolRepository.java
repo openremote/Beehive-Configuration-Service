@@ -18,27 +18,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openremote.beehive.configuration.www.dto;
+package org.openremote.beehive.configuration.repository;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import org.openremote.beehive.configuration.model.Command;
+import org.openremote.beehive.configuration.model.Protocol;
+import org.springframework.data.repository.CrudRepository;
 
-@XmlRootElement
-public interface CommandDTO
+public interface ProtocolRepository extends CrudRepository<Protocol,Long>
 {
-  static final String URN_OPENREMOTE_DEVICE_COMMAND_LIRC_SECTION_ID = "urn:openremote:device-command:lirc:section-id";
-  static final String URN_OPENREMOTE_DEVICE_COMMAND_TAG = "urn:openremote:device-command:tag";
-
-  Long getId();
-
-  String getName();
-
-  String getProtocol();
-
-  Map<String, String> getProperties();
-
-  Collection<String> getTags();
 }

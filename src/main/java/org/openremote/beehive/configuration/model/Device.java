@@ -62,6 +62,11 @@ public class Device extends AbstractEntity {
         command.setDevice(this);
     }
 
+    public void removeCommand(Command command) {
+        this.commands.remove(command);
+        command.setDevice(null);
+    }
+
     public String getName() {
         return name;
     }
