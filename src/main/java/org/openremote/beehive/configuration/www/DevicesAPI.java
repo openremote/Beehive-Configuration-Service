@@ -64,9 +64,6 @@ public class DevicesAPI {
     PlatformTransactionManager platformTransactionManager;
 
     @Autowired
-    AccountRepository accountRepository;
-
-    @Autowired
     DeviceRepository deviceRepository;
 
     private Account account;
@@ -92,7 +89,6 @@ public class DevicesAPI {
     @Path("/{deviceId}")
     public DeviceDTOOut getById(@PathParam("deviceId")Long deviceId) {
         return new DeviceDTOOut(getDeviceById(deviceId));
-
     }
 
     @POST
