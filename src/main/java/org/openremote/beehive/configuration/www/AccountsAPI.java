@@ -22,20 +22,18 @@ package org.openremote.beehive.configuration.www;
 
 import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
+import org.openremote.beehive.configuration.model.persistence.jpa.MinimalPersistentUser;
 import org.openremote.beehive.configuration.repository.AccountRepository;
+import org.openremote.beehive.configuration.repository.MinimalPersistentUserRepository;
 import org.openremote.beehive.configuration.www.dto.AccountDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,9 +43,15 @@ import java.util.List;
 public class AccountsAPI {
     @Context
     private ResourceContext resourceContext;
+
+    @Context
+    private SecurityContext security;
+
     @Autowired
     AccountRepository accountRepository;
 
+    @Autowired
+    MinimalPersistentUserRepository userRepository;
 
     private Account getAccountOrThrow(@PathParam("accountId") Long accountId) {
         Account account = accountRepository.findOne(accountId);
@@ -69,10 +73,11 @@ public class AccountsAPI {
         return result;
     }
 
-
     @GET
     @Path("/{accountId}")
     public AccountDTO getAccountById(@PathParam("accountId") Long accountId) {
+        validateAccountAccess(accountId);
+
         Account account = getAccountOrThrow(accountId);
         AccountDTO accountDTO = new AccountDTO();
         accountDTO.setId(account.getId());
@@ -89,10 +94,25 @@ public class AccountsAPI {
 
     @Path("/{accountId}/devices")
     public DevicesAPI getDevices(@PathParam("accountId") Long accountId) {
+        validateAccountAccess(accountId);
+
         DevicesAPI resource = resourceContext.getResource(DevicesAPI.class);
         Account account = getAccountOrThrow(accountId);
         resource.setAccount(account);
         return resource;
     }
 
+    private void validateAccountAccess(Long accountId) {
+        String username = security.getUserPrincipal().getName();
+
+        MinimalPersistentUser user = null;
+        user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            throw new NotAuthorizedException("Basic realm=\"Beehive Configuration Service\"");
+        }
+        if (user.getAccountId() != accountId) {
+            throw new ForbiddenException();
+        }
+    }
 }

@@ -18,22 +18,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openremote.beehive.configuration;
+package org.openremote.beehive.configuration.repository;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.openremote.beehive.configuration.www.AccountsAPI;
-import org.openremote.beehive.configuration.www.CommandsAPI;
-import org.openremote.beehive.configuration.www.DevicesAPI;
-import org.openremote.beehive.configuration.www.SensorsAPI;
-import org.springframework.stereotype.Component;
+import org.openremote.beehive.configuration.model.persistence.jpa.MinimalPersistentUser;
+import org.springframework.data.repository.CrudRepository;
 
-@Component
-public class JerseyConfig extends ResourceConfig {
-    public JerseyConfig() {
-        packages("org.openremote.beehive.configuration");
-        register(DevicesAPI.class);
-        register(AccountsAPI.class);
-        register(CommandsAPI.class);
-        register(SensorsAPI.class);
-    }
+public interface MinimalPersistentUserRepository extends CrudRepository<MinimalPersistentUser,Long>
+{
+  MinimalPersistentUser findByUsername(String name);
 }

@@ -20,20 +20,20 @@
  */
 package org.openremote.beehive.configuration;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.openremote.beehive.configuration.www.AccountsAPI;
-import org.openremote.beehive.configuration.www.CommandsAPI;
-import org.openremote.beehive.configuration.www.DevicesAPI;
-import org.openremote.beehive.configuration.www.SensorsAPI;
-import org.springframework.stereotype.Component;
+import org.openremote.beehive.configuration.www.dto.ErrorDTO;
 
-@Component
-public class JerseyConfig extends ResourceConfig {
-    public JerseyConfig() {
-        packages("org.openremote.beehive.configuration");
-        register(DevicesAPI.class);
-        register(AccountsAPI.class);
-        register(CommandsAPI.class);
-        register(SensorsAPI.class);
-    }
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
+@Provider
+public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException>
+{
+  @Override
+  public Response toResponse(WebApplicationException e)
+  {
+    ErrorDTO error = new ErrorDTO(e.getResponse().getStatus(), e.getMessage());
+    return Response.status(error.getStatus()).entity(error).build();
+  }
 }
