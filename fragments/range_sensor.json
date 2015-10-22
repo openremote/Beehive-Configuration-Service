@@ -1,0 +1,7 @@
+{
+  "name": "RangeSensor",
+  "type": "RANGE",
+  "commandId": 17714,
+  "minValue" : -10,
+  "maxValue" : 10
+}

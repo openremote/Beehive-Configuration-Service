@@ -1,0 +1,9 @@
+{
+  "name": "CustomSensor",
+  "type": "CUSTOM",
+  "commandId": 17714,
+  "states" : {
+    "state1" : "on",
+    "state2" : "off"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name" : "on",
+  "protocol" : "knx",
+  "properties" :
+   {
+     "groupAddress" : "123",
+     "DPT" : "1.001"
+   },
+  "tags" : [ "tag1" , "tag2"]
+}
