@@ -20,9 +20,12 @@
  */
 package org.openremote.beehive.configuration.model;
 
+import org.openremote.beehive.configuration.exception.NotFoundException;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 @Entity
 @Table(name = "device")
@@ -85,6 +88,16 @@ public class Device extends AbstractEntity {
         }
     }
 
+    public void addSensor(Sensor sensor) {
+        this.sensors.add(sensor);
+        sensor.setDevice(this);
+    }
+
+    public void removeSensor(Sensor sensor) {
+        this.sensors.remove(sensor);
+        sensor.setDevice(null);
+    }
+
     public String getName() {
         return name;
     }
@@ -116,4 +129,33 @@ public class Device extends AbstractEntity {
     public void setAccount(Account account) {
         this.account = account;
     }
+
+    public Command getCommandById(Long commandId)
+    {
+        Collection<Command> commands = this.getCommands();
+        Optional<Command> commandOptional = commands
+                .stream()
+                .filter(command -> command.getId().equals(commandId))
+                .findFirst();
+        if (!commandOptional.isPresent())
+        {
+            throw new NotFoundException();
+        }
+        return commandOptional.get();
+    }
+
+    public Sensor getSensorById(Long sensorId)
+    {
+        Collection<Sensor> sensors = this.getSensors();
+        Optional<Sensor> sensorOptional = sensors
+                .stream()
+                .filter(sensor -> sensor.getId().equals(sensorId))
+                .findFirst();
+        if (!sensorOptional.isPresent())
+        {
+            throw new NotFoundException();
+        }
+        return sensorOptional.get();
+    }
+
 }

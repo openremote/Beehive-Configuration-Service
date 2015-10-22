@@ -94,21 +94,7 @@ public class CommandsAPI
   @Path("/{commandId}")
   public CommandDTOOut getById(@PathParam("commandId") Long commandId)
   {
-    return new CommandDTOOut(getCommandById(commandId));
-  }
-
-  private Command getCommandById(Long commandId)
-  {
-    Collection<Command> commands = device.getCommands();
-    Optional<Command> commandOptional = commands
-            .stream()
-            .filter(command -> command.getId().equals(commandId))
-            .findFirst();
-    if (!commandOptional.isPresent())
-    {
-      throw new NotFoundException();
-    }
-    return commandOptional.get();
+    return new CommandDTOOut(device.getCommandById(commandId));
   }
 
   @POST
@@ -169,7 +155,7 @@ public class CommandsAPI
   @PUT
   @Path("/{commandId}")
   public Response udpateCommand(@PathParam("commandId")Long commandId, CommandDTOIn commandDTO) {
-    Command existingCommand = getCommandById(commandId);
+    Command existingCommand = device.getCommandById(commandId);
 
 /*    Device deviceWithSameName = deviceRepository.findByName(deviceDTO.getName());
 
@@ -200,7 +186,7 @@ public class CommandsAPI
   @Path("/{commandId}")
   public Response deleteCommand(@PathParam("commandId") Long commandId)
   {
-    Command existingCommand = getCommandById(commandId);
+    Command existingCommand = device.getCommandById(commandId);
 
     new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Object>()
     {

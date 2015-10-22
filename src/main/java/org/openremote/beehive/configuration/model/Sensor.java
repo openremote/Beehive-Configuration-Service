@@ -46,7 +46,7 @@ public class Sensor extends AbstractEntity {
     @JoinColumn(name = "account_oid")
     private Account account;
 
-    @OneToMany(mappedBy = "sensor", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "sensor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<SensorState> states = new ArrayList<>();
 
     @OneToOne(mappedBy = "sensor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -108,6 +108,15 @@ public class Sensor extends AbstractEntity {
         }
     }
 
+    public void addState(SensorState state) {
+        this.states.add(state);
+        state.setSensor(this);
+    }
+
+    public void removeState(SensorState state) {
+        this.states.remove(state);
+        state.setSensor(null);
+    }
     public SensorCommandReference getSensorCommandReference()
     {
         return sensorCommandReference;
