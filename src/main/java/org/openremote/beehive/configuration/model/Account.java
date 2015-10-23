@@ -86,8 +86,8 @@ public class Account extends AbstractEntity {
     }
 
     public ControllerConfiguration getControllerConfigurationById(Long configurationId) {
-        Collection<ControllerConfiguration> conifgurations = this.getControllerConfigurations();
-        Optional<ControllerConfiguration> configurationOptional = conifgurations
+        Collection<ControllerConfiguration> configurations = this.getControllerConfigurations();
+        Optional<ControllerConfiguration> configurationOptional = configurations
                 .stream()
                 .filter(configuration -> configuration.getId().equals(configurationId))
                 .findFirst();
