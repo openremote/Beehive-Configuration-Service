@@ -25,6 +25,7 @@ import org.openremote.beehive.configuration.model.ControllerConfiguration;
 import org.openremote.beehive.configuration.repository.ControllerConfigurationRepository;
 import org.openremote.beehive.configuration.www.dto.ControllerConfigurationDTOIn;
 import org.openremote.beehive.configuration.www.dto.ControllerConfigurationDTOOut;
+import org.openremote.beehive.configuration.www.dto.ErrorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,7 @@ import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -88,12 +90,10 @@ public class ControllerConfigurationsAPI
   @POST
   public Response createControllerConfiguration(ControllerConfigurationDTOIn configurationDTO) {
 
-    /* TODO
-    if (deviceRepository.findByName(deviceDTO.getName()) != null)
+    if (account.getControllerConfigurationByName(configurationDTO.getName()).isPresent())
     {
-      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A controller configuration with the same name already exists")).build();
     }
-    */
 
     return Response.ok(new ControllerConfigurationDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<ControllerConfiguration>()
     {
@@ -116,14 +116,12 @@ public class ControllerConfigurationsAPI
   public Response updateControllerConfiguration(@PathParam("configurationId")Long configurationId, ControllerConfigurationDTOIn configurationDTO) {
     ControllerConfiguration existingConfiguration = account.getControllerConfigurationById(configurationId);
 
-    /*
-    Device deviceWithSameName = deviceRepository.findByName(configurationDTOIn.getName());
+    Optional<ControllerConfiguration> optionalControllerConfigurationWithSameName = account.getControllerConfigurationByName(configurationDTO.getName());
 
-    if (deviceWithSameName != null && !deviceWithSameName.getId().equals(existingConfiguration.getId()))
+    if (optionalControllerConfigurationWithSameName.isPresent() && !optionalControllerConfigurationWithSameName.get().getId().equals(existingConfiguration.getId()))
     {
-      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A controller configuration with the same name already exists")).build();
     }
-    */
 
     return Response.ok(new ControllerConfigurationDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<ControllerConfiguration>()
     {

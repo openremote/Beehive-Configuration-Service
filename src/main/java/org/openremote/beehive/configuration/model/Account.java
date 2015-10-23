@@ -121,4 +121,16 @@ public class Account extends AbstractEntity {
         return configurationOptional.get();
     }
 
+    public Optional<ControllerConfiguration> getControllerConfigurationByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        Collection<ControllerConfiguration> configurations = this.getControllerConfigurations();
+        Optional<ControllerConfiguration> configurationOptional = configurations
+                .stream()
+                .filter(configuration -> name.equals(configuration.getName()))
+                .findFirst();
+        return configurationOptional;
+    }
+
 }
