@@ -22,6 +22,7 @@ package org.openremote.beehive.configuration.www;
 
 import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
+import org.openremote.beehive.configuration.model.ControllerConfiguration;
 import org.openremote.beehive.configuration.model.persistence.jpa.MinimalPersistentUser;
 import org.openremote.beehive.configuration.repository.AccountRepository;
 import org.openremote.beehive.configuration.repository.MinimalPersistentUserRepository;
@@ -66,6 +67,17 @@ public class AccountsAPI {
         validateAccountAccess(accountId);
 
         DevicesAPI resource = resourceContext.getResource(DevicesAPI.class);
+        Account account = getAccountOrThrow(accountId);
+        resource.setAccount(account);
+        return resource;
+    }
+
+    @Path("/{accountId}/controllerConfigurations")
+    public ControllerConfigurationsAPI getControllerConfigurations(@PathParam("accountId") Long accountId)
+    {
+        validateAccountAccess(accountId);
+
+        ControllerConfigurationsAPI resource = resourceContext.getResource(ControllerConfigurationsAPI.class);
         Account account = getAccountOrThrow(accountId);
         resource.setAccount(account);
         return resource;

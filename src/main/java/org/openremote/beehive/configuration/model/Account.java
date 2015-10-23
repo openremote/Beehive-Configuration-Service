@@ -20,9 +20,12 @@
  */
 package org.openremote.beehive.configuration.model;
 
+import org.openremote.beehive.configuration.exception.NotFoundException;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 @Entity
 @Table(name = "account")
@@ -30,6 +33,9 @@ public class Account extends AbstractEntity {
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
     private Collection<Device> devices = new ArrayList<>();
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private Collection<ControllerConfiguration> controllerConfigurations = new ArrayList<>();
 
     public Collection<Device> getDevices() {
         return devices;
@@ -53,4 +59,42 @@ public class Account extends AbstractEntity {
         this.devices.remove(device);
         device.setAccount(null);
     }
+
+    public Collection<ControllerConfiguration> getControllerConfigurations()
+    {
+        return controllerConfigurations;
+    }
+
+    public void setControllerConfigurations(Collection<ControllerConfiguration> controllerConfigurations)
+    {
+        if (this.controllerConfigurations != controllerConfigurations) {
+            this.controllerConfigurations.clear();
+            if (controllerConfigurations != null) {
+                this.controllerConfigurations.addAll(controllerConfigurations);
+            }
+        }
+    }
+
+    public void addControllerConfiguration(ControllerConfiguration configuration) {
+        this.controllerConfigurations.add(configuration);
+        configuration.setAccount(this);
+    }
+
+    public void removeControllerConfigurations(ControllerConfiguration configuration) {
+        this.controllerConfigurations.remove(configuration);
+        configuration.setAccount(null);
+    }
+
+    public ControllerConfiguration getControllerConfigurationById(Long configurationId) {
+        Collection<ControllerConfiguration> conifgurations = this.getControllerConfigurations();
+        Optional<ControllerConfiguration> configurationOptional = conifgurations
+                .stream()
+                .filter(configuration -> configuration.getId().equals(configurationId))
+                .findFirst();
+        if (!configurationOptional.isPresent()) {
+            throw new NotFoundException();
+        }
+        return configurationOptional.get();
+    }
+
 }
