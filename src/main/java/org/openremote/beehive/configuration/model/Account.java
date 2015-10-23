@@ -72,6 +72,17 @@ public class Account extends AbstractEntity {
         return deviceOptional.get();
     }
 
+    public Optional<Device> getDeviceByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        Collection<Device> devices = this.getDevices();
+        Optional<Device> deviceOptional = devices
+                .stream()
+                .filter(device -> name.equals(device.getName()))
+                .findFirst();
+        return deviceOptional;
+    }
 
     public Collection<ControllerConfiguration> getControllerConfigurations()
     {

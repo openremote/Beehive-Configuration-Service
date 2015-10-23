@@ -89,7 +89,7 @@ public class DevicesAPI {
 
     @POST
     public Response createDevice(DeviceDTOIn deviceDTO) {
-        if (deviceRepository.findByName(deviceDTO.getName()) != null)
+        if (account.getDeviceByName(deviceDTO.getName()).isPresent())
         {
             return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
         }
@@ -115,9 +115,9 @@ public class DevicesAPI {
     public Response udpateDevice(@PathParam("deviceId")Long deviceId, DeviceDTOIn deviceDTO) {
         Device existingDevice = account.getDeviceById(deviceId);
 
-        Device deviceWithSameName = deviceRepository.findByName(deviceDTO.getName());
+        Optional<Device> optionalDeviceWithSameName = account.getDeviceByName(deviceDTO.getName());
 
-        if (deviceWithSameName != null && !deviceWithSameName.getId().equals(existingDevice.getId()))
+        if (optionalDeviceWithSameName.isPresent() && !optionalDeviceWithSameName.get().getId().equals(existingDevice.getId()))
         {
             return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
         }
