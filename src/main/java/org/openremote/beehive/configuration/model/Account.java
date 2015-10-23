@@ -60,6 +60,19 @@ public class Account extends AbstractEntity {
         device.setAccount(null);
     }
 
+    public Device getDeviceById(Long deviceId) {
+        Collection<Device> devices = this.getDevices();
+        Optional<Device> deviceOptional = devices
+                .stream()
+                .filter(device -> device.getId().equals(deviceId))
+                .findFirst();
+        if (!deviceOptional.isPresent()) {
+            throw new NotFoundException();
+        }
+        return deviceOptional.get();
+    }
+
+
     public Collection<ControllerConfiguration> getControllerConfigurations()
     {
         return controllerConfigurations;

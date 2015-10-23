@@ -84,7 +84,7 @@ public class DevicesAPI {
     @GET
     @Path("/{deviceId}")
     public DeviceDTOOut getById(@PathParam("deviceId")Long deviceId) {
-        return new DeviceDTOOut(getDeviceById(deviceId));
+        return new DeviceDTOOut(account.getDeviceById(deviceId));
     }
 
     @POST
@@ -113,7 +113,7 @@ public class DevicesAPI {
     @PUT
     @Path("/{deviceId}")
     public Response udpateDevice(@PathParam("deviceId")Long deviceId, DeviceDTOIn deviceDTO) {
-        Device existingDevice = getDeviceById(deviceId);
+        Device existingDevice = account.getDeviceById(deviceId);
 
         Device deviceWithSameName = deviceRepository.findByName(deviceDTO.getName());
 
@@ -139,7 +139,7 @@ public class DevicesAPI {
     @DELETE
     @Path("/{deviceId}")
     public Response deleteDevice(@PathParam("deviceId")Long deviceId) {
-        Device existingDevice = getDeviceById(deviceId);
+        Device existingDevice = account.getDeviceById(deviceId);
 
         new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Object>()
         {
@@ -159,27 +159,14 @@ public class DevicesAPI {
     @Path("/{deviceId}/commands")
     public CommandsAPI getCommands(@PathParam("deviceId") Long deviceId) {
         CommandsAPI resource = resourceContext.getResource(CommandsAPI.class);
-        resource.setDevice(getDeviceById(deviceId));
+        resource.setDevice(account.getDeviceById(deviceId));
         return resource;
     }
 
     @Path("/{deviceId}/sensors")
     public SensorsAPI getSensors(@PathParam("deviceId") Long deviceId) {
         SensorsAPI resource = resourceContext.getResource(SensorsAPI.class);
-        resource.setDevice(getDeviceById(deviceId));
+        resource.setDevice(account.getDeviceById(deviceId));
         return resource;
     }
-
-    private Device getDeviceById(Long deviceId) {
-        Collection<Device> devices = account.getDevices();
-        Optional<Device> deviceOptional = devices
-                .stream()
-                .filter(device -> device.getId().equals(deviceId))
-                .findFirst();
-        if (!deviceOptional.isPresent()) {
-            throw new NotFoundException();
-        }
-        return deviceOptional.get();
-    }
-
 }
