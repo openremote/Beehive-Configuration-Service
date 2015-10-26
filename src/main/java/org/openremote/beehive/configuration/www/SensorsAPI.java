@@ -142,6 +142,7 @@ public class SensorsAPI {
       }
     }
     populateSensorFromDTO(newSensor, sensorDTO);
+    device.addSensor(newSensor);
     return newSensor;
   }
 
@@ -187,7 +188,6 @@ public class SensorsAPI {
     commandReference.setCommand(command);
 
     sensor.setAccount(device.getAccount());
-    device.addSensor(sensor);
   }
 
   @PUT
@@ -211,16 +211,25 @@ public class SensorsAPI {
       @Override
       public Sensor doInTransaction(TransactionStatus transactionStatus)
       {
-
         // TODO: check for more optimal solution, e.g. go over existing attributes and update individually
         // and add/delete as required
         // -> currently delete and re-creates protocol / protocol_attr records
 
 //        protocolRepository.delete(existingSensor.getProtocol());
 
-        populateSensorFromDTO(existingSensor, sensorDTO);
-        sensorRepository.save(existingSensor);
-        return existingSensor;
+        SensorType newType = SensorType.valueOf(sensorDTO.getType());
+        Sensor sensor;
+
+        if (existingSensor.getSensorType() == newType) {
+          populateSensorFromDTO(existingSensor, sensorDTO);
+          sensor = existingSensor;
+        } else {
+          device.removeSensor(existingSensor);
+          sensorRepository.delete(existingSensor);
+          sensor = createSensorFromDTO(sensorDTO);
+        }
+        sensorRepository.save(sensor);
+        return sensor;
       }
     }))).build();
   }
