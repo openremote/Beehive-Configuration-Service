@@ -100,7 +100,7 @@ public class SensorsAPI {
   public Response createSensor(SensorDTOIn sensorDTO)
   {
     if (device.getSensorByName(sensorDTO.getName()).isPresent()) {
-      return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
+      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
     }
 
     return Response.ok(new SensorDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Sensor>()
