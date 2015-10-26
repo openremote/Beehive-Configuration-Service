@@ -193,7 +193,7 @@ public class SensorsAPI {
     Sensor existingSensor = device.getSensorById(sensorId);
 
     Optional<Sensor> optionalSensorWithSameName = device.getSensorByName(sensorDTO.getName());
-    if (optionalSensorWithSameName.isPresent() && optionalSensorWithSameName.get().getId().equals(existingSensor.getId())) {
+    if (optionalSensorWithSameName.isPresent() && !optionalSensorWithSameName.get().getId().equals(existingSensor.getId())) {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
     }
 
