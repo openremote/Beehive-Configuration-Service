@@ -26,6 +26,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "device")
@@ -182,4 +183,15 @@ public class Device extends AbstractEntity {
         return sensorOptional;
     }
 
+    public Collection<Sensor> getSensorsReferencingCommand(Command command) {
+        Collection<Sensor> sensors = this.getSensors();
+        return sensors
+                .stream()
+                .filter(sensor -> {
+                    if (sensor.getSensorCommandReference() == null) {
+                      return false;
+                    }
+                    return (command.getId().equals(sensor.getSensorCommandReference().getCommand().getId()));
+                }).collect(Collectors.toList());
+    }
 }

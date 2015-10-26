@@ -181,6 +181,10 @@ public class CommandsAPI
   {
     Command existingCommand = device.getCommandById(commandId);
 
+    if (!device.getSensorsReferencingCommand(existingCommand).isEmpty()) {
+      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "This command is used by a sensor")).build();
+    }
+
     new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Object>()
     {
       @Override
