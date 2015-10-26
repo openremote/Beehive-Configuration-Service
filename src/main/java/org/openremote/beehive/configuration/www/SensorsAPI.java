@@ -154,13 +154,16 @@ public class SensorsAPI {
       case CUSTOM:
       {
         List<SensorState> states = new ArrayList<SensorState>();
-        sensorDTO.getStates().entrySet().forEach(e -> {
-          SensorState state = new SensorState();
-          state.setName(e.getKey());
-          state.setValue(e.getValue());
-          state.setSensor(sensor);
-          states.add(state);
-        });
+        if (sensorDTO.getStates() != null)
+        {
+          sensorDTO.getStates().entrySet().forEach(e -> {
+            SensorState state = new SensorState();
+            state.setName(e.getKey());
+            state.setValue(e.getValue());
+            state.setSensor(sensor);
+            states.add(state);
+          });
+        }
         CustomSensor customSensor = (CustomSensor)sensor;
         customSensor.setStates(states);
         break;
