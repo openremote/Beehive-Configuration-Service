@@ -103,6 +103,12 @@ public class SensorsAPI {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
     }
 
+    try {
+      Command command = device.getCommandById(sensorDTO.getCommandId());
+    } catch (NotFoundException e) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorDTO(400, "Referenced command does not exist")).build();
+    }
+
     return Response.ok(new SensorDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Sensor>()
     {
       @Override
@@ -189,6 +195,12 @@ public class SensorsAPI {
     Optional<Sensor> optionalSensorWithSameName = device.getSensorByName(sensorDTO.getName());
     if (optionalSensorWithSameName.isPresent() && optionalSensorWithSameName.get().getId().equals(existingSensor.getId())) {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
+    }
+
+    try {
+      Command command = device.getCommandById(sensorDTO.getCommandId());
+    } catch (NotFoundException e) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorDTO(400, "Referenced command does not exist")).build();
     }
 
     return Response.ok(new SensorDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Sensor>()
