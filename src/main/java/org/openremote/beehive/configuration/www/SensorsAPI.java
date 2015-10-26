@@ -35,6 +35,7 @@ import org.openremote.beehive.configuration.repository.SensorRepository;
 import org.openremote.beehive.configuration.www.dto.CommandDTO;
 import org.openremote.beehive.configuration.www.dto.CommandDTOIn;
 import org.openremote.beehive.configuration.www.dto.CommandDTOOut;
+import org.openremote.beehive.configuration.www.dto.ErrorDTO;
 import org.openremote.beehive.configuration.www.dto.SensorDTOIn;
 import org.openremote.beehive.configuration.www.dto.SensorDTOOut;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,15 +99,9 @@ public class SensorsAPI {
   @POST
   public Response createSensor(SensorDTOIn sensorDTO)
   {
-
-    // TODO: validations
-
-    /*
-    if (deviceRepository.findByName(deviceDTO.getName()) != null)
-    {
-      return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+    if (device.getSensorByName(sensorDTO.getName()).isPresent()) {
+      return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
     }
-    */
 
     return Response.ok(new SensorDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Sensor>()
     {
@@ -191,13 +186,11 @@ public class SensorsAPI {
   public Response updateSensor(@PathParam("sensorId")Long sensorId, SensorDTOIn sensorDTO) {
     Sensor existingSensor = device.getSensorById(sensorId);
 
-/*    Device deviceWithSameName = deviceRepository.findByName(deviceDTO.getName());
-
-    if (deviceWithSameName != null && !deviceWithSameName.getId().equals(existingDevice.getId()))
-    {
-      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+    Optional<Sensor> optionalSensorWithSameName = device.getSensorByName(sensorDTO.getName());
+    if (optionalSensorWithSameName.isPresent() && optionalSensorWithSameName.get().getId().equals(existingSensor.getId())) {
+      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
     }
-*/
+
     return Response.ok(new SensorDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Sensor>()
     {
       @Override

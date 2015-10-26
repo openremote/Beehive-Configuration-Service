@@ -100,15 +100,9 @@ public class CommandsAPI
   @POST
   public Response createCommand(CommandDTOIn commandDTO)
   {
-
-    // TODO: validations
-
-    /*
-    if (deviceRepository.findByName(deviceDTO.getName()) != null)
-    {
-      return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+    if (device.getCommandByName(commandDTO.getName()).isPresent()) {
+      return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.CONFLICT).entity(new ErrorDTO(409, "A command with the same name already exists")).build();
     }
-    */
 
     return Response.ok(new CommandDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Command>()
     {
@@ -157,13 +151,12 @@ public class CommandsAPI
   public Response udpateCommand(@PathParam("commandId")Long commandId, CommandDTOIn commandDTO) {
     Command existingCommand = device.getCommandById(commandId);
 
-/*    Device deviceWithSameName = deviceRepository.findByName(deviceDTO.getName());
-
-    if (deviceWithSameName != null && !deviceWithSameName.getId().equals(existingDevice.getId()))
+    Optional<Command> optionalCommandWithSameName = device.getCommandByName(commandDTO.getName());
+    if (optionalCommandWithSameName.isPresent() && !optionalCommandWithSameName.get().getId().equals(existingCommand.getId()))
     {
-      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
+      return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A command with the same name already exists")).build();
     }
-*/
+
     return Response.ok(new CommandDTOOut(new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Command>()
     {
       @Override

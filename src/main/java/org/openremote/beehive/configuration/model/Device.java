@@ -144,6 +144,18 @@ public class Device extends AbstractEntity {
         return commandOptional.get();
     }
 
+    public Optional<Command> getCommandByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        Collection<Command> commands = this.getCommands();
+        Optional<Command> commandOptional = commands
+                .stream()
+                .filter(command -> name.equals(command.getName()))
+                .findFirst();
+        return commandOptional;
+    }
+
     public Sensor getSensorById(Long sensorId)
     {
         Collection<Sensor> sensors = this.getSensors();
@@ -156,6 +168,18 @@ public class Device extends AbstractEntity {
             throw new NotFoundException();
         }
         return sensorOptional.get();
+    }
+
+    public Optional<Sensor> getSensorByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        Collection<Sensor> sensors = this.getSensors();
+        Optional<Sensor> sensorOptional = sensors
+                .stream()
+                .filter(sensor -> name.equals(sensor.getName()))
+                .findFirst();
+        return sensorOptional;
     }
 
 }
