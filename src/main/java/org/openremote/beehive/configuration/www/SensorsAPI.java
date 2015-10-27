@@ -54,6 +54,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -154,21 +155,41 @@ public class SensorsAPI {
     switch (type) {
       case CUSTOM:
       {
-        List<SensorState> states = new ArrayList<SensorState>();
-        if (sensorDTO.getStates() != null)
-        {
-          sensorDTO.getStates().entrySet().forEach(e -> {
+        // Makes code below easier if we ensure the DTO states is non null
+        if (sensorDTO.getStates() == null) {
+          sensorDTO.setStates(new HashMap<String, String>());
+        }
+
+        CustomSensor customSensor = (CustomSensor)sensor;
+        // Deal with new and updates
+        sensorDTO.getStates().entrySet().forEach(e -> {
+          Optional<SensorState> stateOptional = sensor.getStateByName(e.getKey());
+          if (stateOptional.isPresent())
+          {
+            stateOptional.get().setValue(e.getValue());
+          } else
+          {
             SensorState state = new SensorState();
             state.setName(e.getKey());
             state.setValue(e.getValue());
             state.setSensor(sensor);
-            states.add(state);
-          });
-        }
-        CustomSensor customSensor = (CustomSensor)sensor;
-        customSensor.setStates(states);
+            customSensor.addState(state);
+          }
+        });
+
+        // Go over existing states and get rid of ones that do not exist anymore
+        sensor.getStates().forEach(state -> {
+          if (!sensorDTO.getStates().containsKey(state.getName())) {
+            customSensor.removeState(state);
+          }
+        });
+
         break;
       }
+      case SWITCH:
+        break;
+      case LEVEL:
+        break;
       case RANGE:
       {
         RangeSensor rangeSensor = (RangeSensor)sensor;
@@ -176,6 +197,8 @@ public class SensorsAPI {
         rangeSensor.setMaxValue(sensorDTO.getMaxValue());
         break;
       }
+      case COLOR:
+        break;
     }
 
     SensorCommandReference commandReference = sensor.getSensorCommandReference();
@@ -211,11 +234,7 @@ public class SensorsAPI {
       @Override
       public Sensor doInTransaction(TransactionStatus transactionStatus)
       {
-        // TODO: check for more optimal solution, e.g. go over existing attributes and update individually
-        // and add/delete as required
-        // -> currently delete and re-creates protocol / protocol_attr records
-
-//        protocolRepository.delete(existingSensor.getProtocol());
+        // TODO: check for more optimal solution for update of sensor states
 
         SensorType newType = SensorType.valueOf(sensorDTO.getType());
         Sensor sensor;

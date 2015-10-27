@@ -23,6 +23,7 @@ package org.openremote.beehive.configuration.model;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 @Entity
 @Table(name = "sensor")
@@ -46,7 +47,7 @@ public class Sensor extends AbstractEntity {
     @JoinColumn(name = "account_oid")
     private Account account;
 
-    @OneToMany(mappedBy = "sensor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "sensor", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Collection<SensorState> states = new ArrayList<>();
 
     @OneToOne(mappedBy = "sensor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -117,6 +118,15 @@ public class Sensor extends AbstractEntity {
         this.states.remove(state);
         state.setSensor(null);
     }
+
+    public Optional<SensorState> getStateByName(String name) {
+        Optional<SensorState> stateOptional = getStates()
+                .stream()
+                .filter(state -> name.equals(state.getName()))
+                .findFirst();
+        return stateOptional;
+    }
+
     public SensorCommandReference getSensorCommandReference()
     {
         return sensorCommandReference;
