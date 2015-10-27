@@ -45,10 +45,10 @@ public class Device extends AbstractEntity {
     @JoinColumn(name = "account_oid")
     private Account account;
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY, orphanRemoval = true)
     private Collection<Command> commands = new ArrayList<>();
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY, orphanRemoval = true)
     private Collection<Sensor> sensors = new ArrayList<>();
 
     public Collection<Command> getCommands() {
