@@ -22,6 +22,7 @@ package org.openremote.beehive.configuration.www.dto;
 
 import org.openremote.beehive.configuration.model.RangeSensor;
 import org.openremote.beehive.configuration.model.Sensor;
+import org.openremote.beehive.configuration.model.SensorState;
 import org.openremote.beehive.configuration.model.SensorType;
 
 import java.util.HashMap;
@@ -85,7 +86,9 @@ public class SensorDTOOut implements SensorDTO
   public Map<String, String> getStates()
   {
     Map<String, String> states = new HashMap<String, String>();
-    this.sensor.getStates().forEach(s -> states.put(s.getName(), s.getValue()));
+    for (SensorState state : this.sensor.getStates()) {
+      states.put(state.getName(), state.getValue());
+    }
     return states;
   }
 }

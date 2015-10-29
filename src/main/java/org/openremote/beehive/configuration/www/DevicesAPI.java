@@ -20,7 +20,6 @@
  */
 package org.openremote.beehive.configuration.www;
 
-import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.model.Device;
 import org.openremote.beehive.configuration.repository.DeviceRepository;
@@ -44,9 +43,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Scope("prototype")
@@ -75,10 +73,11 @@ public class DevicesAPI {
     @GET
     public Collection<DeviceDTOOut> list() {
         Collection<Device> devices = account.getDevices();
-        return devices
-                .stream()
-                .map(device -> new DeviceDTOOut(device))
-                .collect(Collectors.toList());
+        Collection<DeviceDTOOut> deviceDTOs = new ArrayList<DeviceDTOOut>();
+        for (Device device : devices) {
+            deviceDTOs.add(new DeviceDTOOut(device));
+        }
+        return deviceDTOs;
     }
 
     @GET
@@ -88,8 +87,8 @@ public class DevicesAPI {
     }
 
     @POST
-    public Response createDevice(DeviceDTOIn deviceDTO) {
-        if (account.getDeviceByName(deviceDTO.getName()).isPresent())
+    public Response createDevice(final DeviceDTOIn deviceDTO) {
+        if (account.getDeviceByName(deviceDTO.getName()) != null)
         {
             return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
         }
@@ -112,12 +111,12 @@ public class DevicesAPI {
 
     @PUT
     @Path("/{deviceId}")
-    public Response udpateDevice(@PathParam("deviceId")Long deviceId, DeviceDTOIn deviceDTO) {
-        Device existingDevice = account.getDeviceById(deviceId);
+    public Response udpateDevice(@PathParam("deviceId")Long deviceId, final DeviceDTOIn deviceDTO) {
+        final Device existingDevice = account.getDeviceById(deviceId);
 
-        Optional<Device> optionalDeviceWithSameName = account.getDeviceByName(deviceDTO.getName());
+        Device optionalDeviceWithSameName = account.getDeviceByName(deviceDTO.getName());
 
-        if (optionalDeviceWithSameName.isPresent() && !optionalDeviceWithSameName.get().getId().equals(existingDevice.getId()))
+        if (optionalDeviceWithSameName != null && !optionalDeviceWithSameName.getId().equals(existingDevice.getId()))
         {
             return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A device with the same name already exists")).build();
         }
@@ -139,7 +138,7 @@ public class DevicesAPI {
     @DELETE
     @Path("/{deviceId}")
     public Response deleteDevice(@PathParam("deviceId")Long deviceId) {
-        Device existingDevice = account.getDeviceById(deviceId);
+        final Device existingDevice = account.getDeviceById(deviceId);
 
         new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Object>()
         {

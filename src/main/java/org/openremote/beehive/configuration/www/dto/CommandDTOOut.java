@@ -21,6 +21,7 @@
 package org.openremote.beehive.configuration.www.dto;
 
 import org.openremote.beehive.configuration.model.Command;
+import org.openremote.beehive.configuration.model.Protocol;
 import org.openremote.beehive.configuration.model.ProtocolAttribute;
 
 import java.util.Collection;
@@ -46,13 +47,13 @@ public class CommandDTOOut implements CommandDTO
 
     Collection<ProtocolAttribute> attributes = command.getProtocol().getAttributes();
 
-    attributes.forEach(attribute -> {
+    for (ProtocolAttribute attribute : attributes) {
       if (URN_OPENREMOTE_DEVICE_COMMAND_TAG.equals(attribute.getName())) {
         addTag(attribute.getValue());
       } else {
         addProperty(attribute.getName(), attribute.getValue());
       }
-    });
+    }
   }
 
   @Override

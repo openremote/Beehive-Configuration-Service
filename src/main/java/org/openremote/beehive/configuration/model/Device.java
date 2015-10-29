@@ -22,11 +22,16 @@ package org.openremote.beehive.configuration.model;
 
 import org.openremote.beehive.configuration.exception.NotFoundException;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "device")
@@ -134,64 +139,61 @@ public class Device extends AbstractEntity {
     public Command getCommandById(Long commandId)
     {
         Collection<Command> commands = this.getCommands();
-        Optional<Command> commandOptional = commands
-                .stream()
-                .filter(command -> command.getId().equals(commandId))
-                .findFirst();
-        if (!commandOptional.isPresent())
-        {
-            throw new NotFoundException();
+        for (Command command : commands) {
+            if (commandId.equals(command.getId())) {
+                return command;
+            }
         }
-        return commandOptional.get();
+        throw new NotFoundException();
     }
 
-    public Optional<Command> getCommandByName(String name) {
+    public Command getCommandByName(String name) {
         if (name == null) {
             return null;
         }
         Collection<Command> commands = this.getCommands();
-        Optional<Command> commandOptional = commands
-                .stream()
-                .filter(command -> name.equals(command.getName()))
-                .findFirst();
-        return commandOptional;
+        for (Command command : commands) {
+            if (name.equals(command.getName())) {
+                return command;
+            }
+        }
+        return null;
     }
 
     public Sensor getSensorById(Long sensorId)
     {
         Collection<Sensor> sensors = this.getSensors();
-        Optional<Sensor> sensorOptional = sensors
-                .stream()
-                .filter(sensor -> sensor.getId().equals(sensorId))
-                .findFirst();
-        if (!sensorOptional.isPresent())
-        {
-            throw new NotFoundException();
+        for (Sensor sensor : sensors) {
+            if (sensorId.equals(sensor.getId())) {
+                return sensor;
+            }
         }
-        return sensorOptional.get();
+        throw new NotFoundException();
     }
 
-    public Optional<Sensor> getSensorByName(String name) {
+    public Sensor getSensorByName(String name) {
         if (name == null) {
             return null;
         }
         Collection<Sensor> sensors = this.getSensors();
-        Optional<Sensor> sensorOptional = sensors
-                .stream()
-                .filter(sensor -> name.equals(sensor.getName()))
-                .findFirst();
-        return sensorOptional;
+        for (Sensor sensor : sensors) {
+            if (name.equals(sensor.getName())) {
+                return sensor;
+            }
+        }
+        return null;
     }
 
     public Collection<Sensor> getSensorsReferencingCommand(Command command) {
         Collection<Sensor> sensors = this.getSensors();
-        return sensors
-                .stream()
-                .filter(sensor -> {
-                    if (sensor.getSensorCommandReference() == null) {
-                      return false;
-                    }
-                    return (command.getId().equals(sensor.getSensorCommandReference().getCommand().getId()));
-                }).collect(Collectors.toList());
+        Collection<Sensor> referencingSensors = new HashSet<Sensor>();
+        for (Sensor sensor : sensors) {
+            if (sensor.getSensorCommandReference() != null) {
+                if (command.getId().equals(sensor.getSensorCommandReference().getCommand().getId())) {
+                    referencingSensors.add(sensor);
+                }
+            }
+        }
+        return referencingSensors;
     }
 }

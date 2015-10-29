@@ -43,9 +43,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Scope("prototype")
@@ -75,10 +74,12 @@ public class ControllerConfigurationsAPI
   @GET
   public Collection<ControllerConfigurationDTOOut> list() {
     Collection<ControllerConfiguration> configurations = account.getControllerConfigurations();
-    return configurations
-            .stream()
-            .map(configuration -> new ControllerConfigurationDTOOut(configuration))
-            .collect(Collectors.toList());
+    Collection<ControllerConfigurationDTOOut> configurationDTOs = new ArrayList<ControllerConfigurationDTOOut>();
+    for (ControllerConfiguration configuration : configurations)
+    {
+      configurationDTOs.add(new ControllerConfigurationDTOOut(configuration));
+    }
+    return configurationDTOs;
   }
 
   @GET
@@ -88,9 +89,9 @@ public class ControllerConfigurationsAPI
   }
 
   @POST
-  public Response createControllerConfiguration(ControllerConfigurationDTOIn configurationDTO) {
+  public Response createControllerConfiguration(final ControllerConfigurationDTOIn configurationDTO) {
 
-    if (account.getControllerConfigurationByName(configurationDTO.getName()).isPresent())
+    if (account.getControllerConfigurationByName(configurationDTO.getName()) != null)
     {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A controller configuration with the same name already exists")).build();
     }
@@ -113,12 +114,12 @@ public class ControllerConfigurationsAPI
 
   @PUT
   @Path("/{configurationId}")
-  public Response updateControllerConfiguration(@PathParam("configurationId")Long configurationId, ControllerConfigurationDTOIn configurationDTO) {
-    ControllerConfiguration existingConfiguration = account.getControllerConfigurationById(configurationId);
+  public Response updateControllerConfiguration(@PathParam("configurationId")Long configurationId, final ControllerConfigurationDTOIn configurationDTO) {
+    final ControllerConfiguration existingConfiguration = account.getControllerConfigurationById(configurationId);
 
-    Optional<ControllerConfiguration> optionalControllerConfigurationWithSameName = account.getControllerConfigurationByName(configurationDTO.getName());
+    ControllerConfiguration optionalControllerConfigurationWithSameName = account.getControllerConfigurationByName(configurationDTO.getName());
 
-    if (optionalControllerConfigurationWithSameName.isPresent() && !optionalControllerConfigurationWithSameName.get().getId().equals(existingConfiguration.getId()))
+    if (optionalControllerConfigurationWithSameName != null && !optionalControllerConfigurationWithSameName.getId().equals(existingConfiguration.getId()))
     {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A controller configuration with the same name already exists")).build();
     }
@@ -140,7 +141,7 @@ public class ControllerConfigurationsAPI
   @DELETE
   @Path("/{configurationId}")
   public Response deleteControllerConfiguration(@PathParam("configurationId")Long configurationid) {
-    ControllerConfiguration existingConfiguration = account.getControllerConfigurationById(configurationid);
+    final ControllerConfiguration existingConfiguration = account.getControllerConfigurationById(configurationid);
 
     new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Object>()
     {
