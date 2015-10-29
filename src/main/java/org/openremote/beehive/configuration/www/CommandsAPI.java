@@ -20,19 +20,15 @@
  */
 package org.openremote.beehive.configuration.www;
 
-import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Command;
 import org.openremote.beehive.configuration.model.Device;
 import org.openremote.beehive.configuration.model.Protocol;
 import org.openremote.beehive.configuration.model.ProtocolAttribute;
 import org.openremote.beehive.configuration.repository.CommandRepository;
-import org.openremote.beehive.configuration.repository.DeviceRepository;
 import org.openremote.beehive.configuration.repository.ProtocolRepository;
 import org.openremote.beehive.configuration.www.dto.CommandDTO;
 import org.openremote.beehive.configuration.www.dto.CommandDTOIn;
 import org.openremote.beehive.configuration.www.dto.CommandDTOOut;
-import org.openremote.beehive.configuration.www.dto.DeviceDTOIn;
-import org.openremote.beehive.configuration.www.dto.DeviceDTOOut;
 import org.openremote.beehive.configuration.www.dto.ErrorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -50,10 +46,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Component
 public class CommandsAPI
@@ -84,10 +78,11 @@ public class CommandsAPI
   public Collection<CommandDTOOut> list()
   {
     Collection<Command> commands = device.getCommands();
-    return commands
-            .stream()
-            .map(command -> new CommandDTOOut(command))
-            .collect(Collectors.toList());
+    Collection<CommandDTOOut> commandDTOs = new ArrayList<CommandDTOOut>();
+    for (Command command : commands) {
+      commandDTOs.add(new CommandDTOOut(command));
+    }
+    return commandDTOs;
   }
 
   @GET
@@ -98,9 +93,9 @@ public class CommandsAPI
   }
 
   @POST
-  public Response createCommand(CommandDTOIn commandDTO)
+  public Response createCommand(final CommandDTOIn commandDTO)
   {
-    if (device.getCommandByName(commandDTO.getName()).isPresent()) {
+    if (device.getCommandByName(commandDTO.getName()) != null) {
       return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.CONFLICT).entity(new ErrorDTO(409, "A command with the same name already exists")).build();
     }
 
@@ -125,7 +120,7 @@ public class CommandsAPI
     command.setProtocol(protocol);
 
     List<ProtocolAttribute> attributes = new ArrayList<ProtocolAttribute>();
-    commandDTO.getProperties().entrySet().forEach(e -> {
+    for (Map.Entry<String, String> e : commandDTO.getProperties().entrySet()) {
       if (CommandDTO.URN_OPENREMOTE_DEVICE_COMMAND_LIRC_SECTION_ID.equals(e.getKey()))
       {
         command.setSectionId(e.getValue());
@@ -135,12 +130,12 @@ public class CommandsAPI
         attribute.setProtocol(protocol);
         attributes.add(attribute);
       }
-    });
-    commandDTO.getTags().forEach(t -> {
+    }
+    for (String t : commandDTO.getTags()) {
       ProtocolAttribute attribute = new ProtocolAttribute(CommandDTO.URN_OPENREMOTE_DEVICE_COMMAND_TAG, t);
       attribute.setProtocol(protocol);
       attributes.add(attribute);
-    });
+    }
     protocol.setAttributes(attributes);
 
     device.addCommand(command);
@@ -148,11 +143,11 @@ public class CommandsAPI
 
   @PUT
   @Path("/{commandId}")
-  public Response udpateCommand(@PathParam("commandId")Long commandId, CommandDTOIn commandDTO) {
-    Command existingCommand = device.getCommandById(commandId);
+  public Response udpateCommand(@PathParam("commandId")Long commandId, final CommandDTOIn commandDTO) {
+    final Command existingCommand = device.getCommandById(commandId);
 
-    Optional<Command> optionalCommandWithSameName = device.getCommandByName(commandDTO.getName());
-    if (optionalCommandWithSameName.isPresent() && !optionalCommandWithSameName.get().getId().equals(existingCommand.getId()))
+    Command optionalCommandWithSameName = device.getCommandByName(commandDTO.getName());
+    if (optionalCommandWithSameName != null && !optionalCommandWithSameName.getId().equals(existingCommand.getId()))
     {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A command with the same name already exists")).build();
     }
@@ -179,7 +174,7 @@ public class CommandsAPI
   @Path("/{commandId}")
   public Response deleteCommand(@PathParam("commandId") Long commandId)
   {
-    Command existingCommand = device.getCommandById(commandId);
+    final Command existingCommand = device.getCommandById(commandId);
 
     if (!device.getSensorsReferencingCommand(existingCommand).isEmpty()) {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "This command is used by a sensor")).build();

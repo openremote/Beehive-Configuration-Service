@@ -22,10 +22,12 @@ package org.openremote.beehive.configuration.model;
 
 import org.openremote.beehive.configuration.exception.NotFoundException;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 
 @Entity
 @Table(name = "account")
@@ -62,26 +64,25 @@ public class Account extends AbstractEntity {
 
     public Device getDeviceById(Long deviceId) {
         Collection<Device> devices = this.getDevices();
-        Optional<Device> deviceOptional = devices
-                .stream()
-                .filter(device -> device.getId().equals(deviceId))
-                .findFirst();
-        if (!deviceOptional.isPresent()) {
-            throw new NotFoundException();
+        for (Device device : devices) {
+            if (deviceId.equals(device.getId())) {
+                return device;
+            }
         }
-        return deviceOptional.get();
+        throw new NotFoundException();
     }
 
-    public Optional<Device> getDeviceByName(String name) {
+    public Device getDeviceByName(String name) {
         if (name == null) {
             return null;
         }
         Collection<Device> devices = this.getDevices();
-        Optional<Device> deviceOptional = devices
-                .stream()
-                .filter(device -> name.equals(device.getName()))
-                .findFirst();
-        return deviceOptional;
+        for (Device device : devices) {
+            if (name.equals(device.getName())) {
+                return device;
+            }
+        }
+        return null;
     }
 
     public Collection<ControllerConfiguration> getControllerConfigurations()
@@ -111,26 +112,25 @@ public class Account extends AbstractEntity {
 
     public ControllerConfiguration getControllerConfigurationById(Long configurationId) {
         Collection<ControllerConfiguration> configurations = this.getControllerConfigurations();
-        Optional<ControllerConfiguration> configurationOptional = configurations
-                .stream()
-                .filter(configuration -> configuration.getId().equals(configurationId))
-                .findFirst();
-        if (!configurationOptional.isPresent()) {
-            throw new NotFoundException();
+        for (ControllerConfiguration configuration : configurations) {
+            if (configurationId.equals(configuration.getId())) {
+                return configuration;
+            }
         }
-        return configurationOptional.get();
+        throw new NotFoundException();
     }
 
-    public Optional<ControllerConfiguration> getControllerConfigurationByName(String name) {
+    public ControllerConfiguration getControllerConfigurationByName(String name) {
         if (name == null) {
             return null;
         }
         Collection<ControllerConfiguration> configurations = this.getControllerConfigurations();
-        Optional<ControllerConfiguration> configurationOptional = configurations
-                .stream()
-                .filter(configuration -> name.equals(configuration.getName()))
-                .findFirst();
-        return configurationOptional;
+        for (ControllerConfiguration configuration : configurations) {
+            if (name.equals(configuration.getName())) {
+                return configuration;
+            }
+        }
+        return null;
     }
 
 }

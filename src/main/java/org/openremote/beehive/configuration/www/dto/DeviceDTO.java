@@ -20,11 +20,7 @@
  */
 package org.openremote.beehive.configuration.www.dto;
 
-import org.openremote.beehive.configuration.model.Device;
-
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.function.Function;
 
 @XmlRootElement
 public interface DeviceDTO {

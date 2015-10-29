@@ -24,17 +24,12 @@ import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Command;
 import org.openremote.beehive.configuration.model.CustomSensor;
 import org.openremote.beehive.configuration.model.Device;
-import org.openremote.beehive.configuration.model.Protocol;
-import org.openremote.beehive.configuration.model.ProtocolAttribute;
 import org.openremote.beehive.configuration.model.RangeSensor;
 import org.openremote.beehive.configuration.model.Sensor;
 import org.openremote.beehive.configuration.model.SensorCommandReference;
 import org.openremote.beehive.configuration.model.SensorState;
 import org.openremote.beehive.configuration.model.SensorType;
 import org.openremote.beehive.configuration.repository.SensorRepository;
-import org.openremote.beehive.configuration.www.dto.CommandDTO;
-import org.openremote.beehive.configuration.www.dto.CommandDTOIn;
-import org.openremote.beehive.configuration.www.dto.CommandDTOOut;
 import org.openremote.beehive.configuration.www.dto.ErrorDTO;
 import org.openremote.beehive.configuration.www.dto.SensorDTOIn;
 import org.openremote.beehive.configuration.www.dto.SensorDTOOut;
@@ -55,9 +50,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Component
 public class SensorsAPI {
@@ -84,10 +77,12 @@ public class SensorsAPI {
   public Collection<SensorDTOOut> list()
   {
     Collection<Sensor> sensors = device.getSensors();
-    return sensors
-            .stream()
-            .map(sensor -> new SensorDTOOut(sensor))
-            .collect(Collectors.toList());
+    Collection<SensorDTOOut> sensorDTOs = new ArrayList<SensorDTOOut>();
+    for (Sensor sensor : sensors)
+    {
+      sensorDTOs.add(new SensorDTOOut(sensor));
+    }
+    return sensorDTOs;
   }
 
   @GET
@@ -98,9 +93,9 @@ public class SensorsAPI {
   }
 
   @POST
-  public Response createSensor(SensorDTOIn sensorDTO)
+  public Response createSensor(final SensorDTOIn sensorDTO)
   {
-    if (device.getSensorByName(sensorDTO.getName()).isPresent()) {
+    if (device.getSensorByName(sensorDTO.getName()) != null) {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
     }
 
@@ -162,11 +157,11 @@ public class SensorsAPI {
 
         CustomSensor customSensor = (CustomSensor)sensor;
         // Deal with new and updates
-        sensorDTO.getStates().entrySet().forEach(e -> {
-          Optional<SensorState> stateOptional = sensor.getStateByName(e.getKey());
-          if (stateOptional.isPresent())
+        for (Map.Entry<String, String> e : sensorDTO.getStates().entrySet()) {
+          SensorState stateOptional = sensor.getStateByName(e.getKey());
+          if (stateOptional != null)
           {
-            stateOptional.get().setValue(e.getValue());
+            stateOptional.setValue(e.getValue());
           } else
           {
             SensorState state = new SensorState();
@@ -175,14 +170,15 @@ public class SensorsAPI {
             state.setSensor(sensor);
             customSensor.addState(state);
           }
-        });
+        }
 
         // Go over existing states and get rid of ones that do not exist anymore
-        sensor.getStates().forEach(state -> {
+        Collection<SensorState> states = new ArrayList<SensorState>(sensor.getStates());
+        for (SensorState state : states) {
           if (!sensorDTO.getStates().containsKey(state.getName())) {
             customSensor.removeState(state);
           }
-        });
+        }
 
         break;
       }
@@ -215,11 +211,11 @@ public class SensorsAPI {
 
   @PUT
   @Path("/{sensorId}")
-  public Response updateSensor(@PathParam("sensorId")Long sensorId, SensorDTOIn sensorDTO) {
-    Sensor existingSensor = device.getSensorById(sensorId);
+  public Response updateSensor(@PathParam("sensorId")Long sensorId, final SensorDTOIn sensorDTO) {
+    final Sensor existingSensor = device.getSensorById(sensorId);
 
-    Optional<Sensor> optionalSensorWithSameName = device.getSensorByName(sensorDTO.getName());
-    if (optionalSensorWithSameName.isPresent() && !optionalSensorWithSameName.get().getId().equals(existingSensor.getId())) {
+    Sensor optionalSensorWithSameName = device.getSensorByName(sensorDTO.getName());
+    if (optionalSensorWithSameName != null && !optionalSensorWithSameName.getId().equals(existingSensor.getId())) {
       return Response.status(Response.Status.CONFLICT).entity(new ErrorDTO(409, "A sensor with the same name already exists")).build();
     }
 
@@ -257,7 +253,7 @@ public class SensorsAPI {
   @Path("/{sensorId}")
   public Response deleteSensor(@PathParam("sensorId") Long sensorId)
   {
-    Sensor existingSensor = device.getSensorById(sensorId);
+    final Sensor existingSensor = device.getSensorById(sensorId);
 
     new TransactionTemplate(platformTransactionManager).execute(new TransactionCallback<Object>()
     {
