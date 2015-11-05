@@ -26,6 +26,7 @@ import org.openremote.beehive.configuration.www.CommandsAPI;
 import org.openremote.beehive.configuration.www.ControllerConfigurationsAPI;
 import org.openremote.beehive.configuration.www.DevicesAPI;
 import org.openremote.beehive.configuration.www.SensorsAPI;
+import org.openremote.beehive.configuration.www.UsersAPI;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -37,5 +38,6 @@ public class JerseyConfig extends ResourceConfig {
         register(CommandsAPI.class);
         register(SensorsAPI.class);
         register(ControllerConfigurationsAPI.class);
+        register(UsersAPI.class);
     }
 }
