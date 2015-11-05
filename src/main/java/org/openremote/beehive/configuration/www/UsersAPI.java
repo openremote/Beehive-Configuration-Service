@@ -140,6 +140,8 @@ public class UsersAPI
       }
     };
 
+      // TODO: when can the temporary folder be deleted ?
+
       return Response.ok(stream).header("content-disposition", "attachment; filename = \"openremote.zip\"").build();
 
     } catch (IOException e)
@@ -192,6 +194,7 @@ public class UsersAPI
     PrintWriter pw = new PrintWriter(fos);
     pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
     pw.println("<openremote xmlns=\"http://www.openremote.org\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.openremote.org http://www.openremote.org/schemas/controller.xsd\">");
+    pw.println("<components/>");
     writeSensors(pw, account);
     writeCommands(pw, account);
     writeConfig(pw, account);
