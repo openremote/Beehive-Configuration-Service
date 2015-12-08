@@ -216,7 +216,7 @@ public class UsersAPI
     for (Device device : devices) {
       Collection<Sensor> sensors = device.getSensors();
       for (Sensor sensor : sensors) {
-        pw.println("<sensor id=\"" + sensor.getId() + "\" name=\"" + sensor.getName() + "\" type=\"" + sensor.getSensorType() + "\">");
+        pw.println("<sensor id=\"" + sensor.getId() + "\" name=\"" + sensor.getName() + "\" type=\"" + sensor.getSensorType().toString().toLowerCase() + "\">");
         pw.println("<include type=\"command\" ref=\"" + sensor.getSensorCommandReference().getCommand().getId() + "\"/>");
         switch (sensor.getSensorType())
         {
