@@ -295,51 +295,8 @@ public class UsersAPI
             break;
           }
         }
-
       }
     }
-  }
-
-  private void writeSensors(PrintWriter pw, Account account)
-  {
-    // TODO: escaping
-
-    pw.println("<sensors>");
-    Collection<Device> devices = account.getDevices();
-
-    for (Device device : devices) {
-      Collection<Sensor> sensors = device.getSensors();
-      for (Sensor sensor : sensors) {
-        pw.println("<sensor id=\"" + sensor.getId() + "\" name=\"" + sensor.getName() + "\" type=\"" + sensor.getSensorType().toString().toLowerCase() + "\">");
-        pw.println("<include type=\"command\" ref=\"" + sensor.getSensorCommandReference().getCommand().getId() + "\"/>");
-        switch (sensor.getSensorType())
-        {
-          case RANGE:
-          {
-            pw.println("<min value=\"" + ((RangeSensor)sensor).getMinValue() + "\"/>");
-            pw.println("<max value=\"" + ((RangeSensor)sensor).getMaxValue() + "\"/>");
-            break;
-          }
-          case SWITCH:
-          {
-            pw.println("<state name=\"on\"/>");
-            pw.println("<state name=\"off\"/>");
-            break;
-          }
-          case CUSTOM:
-          {
-            Collection<SensorState> states = sensor.getStates();
-            for (SensorState state : states)
-            {
-              pw.println("<state name=\"" + state.getName() + "\" value=\"" + state.getValue() + "\"/>");
-            }
-            break;
-          }
-        }
-        pw.println("</sensor>");
-      }
-    }
-    pw.println("</sensors>");
   }
 
   private void writeCommands(Document document, Element rootElement, Account account)
@@ -382,28 +339,6 @@ public class UsersAPI
     }
   }
 
-  private void writeCommands(PrintWriter pw, Account account)
-  {
-    pw.println("<commands>");
-    Collection<Device> devices = account.getDevices();
-
-    for (Device device : devices) {
-      Collection<Command> commands = device.getCommands();
-      for (Command command : commands) {
-        pw.println("<command id=\"" + command.getId() + "\" protocol=\"" + command.getProtocol().getType() + "\">");
-        Collection<ProtocolAttribute> attributes = command.getProtocol().getAttributes();
-        for (ProtocolAttribute attribute : attributes) {
-          pw.println("<property name=\"" + attribute.getName() + "\" value=\"" + attribute.getValue() + "\"/>");
-        }
-        pw.println("<property name=\"name\" value=\"" + command.getName() + "\"/>");
-        pw.println("<property name=\"urn:openremote:device-command:device-name\" value=\"" + command.getDevice().getName() + "\"/>");
-        pw.println("<property name=\"urn:openremote:device-command:device-id\" value=\"" + command.getDevice().getId() + "\"/>");
-        pw.println("</command>");
-      }
-    }
-    pw.println("</commands>");
-  }
-
   private void writeConfig(Document document, Element rootElement, Account account)
   {
     Element configElement = document.createElement("config");
@@ -420,19 +355,6 @@ public class UsersAPI
       }
     }
 
-  }
-
-  private void writeConfig(PrintWriter pw, Account account)
-  {
-    pw.println("<config>");
-    Collection<ControllerConfiguration> configurations = account.getControllerConfigurations();
-    for (ControllerConfiguration configuration : configurations) {
-      if (!"rules.editor".equals(configuration.getName()))
-      {
-        pw.println("<property name=\"" + configuration.getName() + "\" value=\"" + configuration.getValue() + "\"/>");
-      }
-    }
-    pw.println("</config>");
   }
 
 }
