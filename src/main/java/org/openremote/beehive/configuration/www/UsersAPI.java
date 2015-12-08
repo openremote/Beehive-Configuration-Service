@@ -106,49 +106,44 @@ public class UsersAPI
       // Create temporary folder
       final java.nio.file.Path temporaryFolder = Files.createTempDirectory("OR");
 
-
       // Create panel.xml file
       final File panelXmlFile = createPanelXmlFile(temporaryFolder);
 
       // Create controller.xml file
       final File controllerXmlFile = createControllerXmlFile(temporaryFolder, account);
 
-
       // Create drools folder and rules file (rules/modeler_rules.drl)
       ControllerConfiguration rulesConfiguration = account.getControllerConfigurationByName("rules.editor");
-        File rulesFolder = new File(temporaryFolder.toFile(), "rules");
-        rulesFolder.mkdir(); // TODO test return value
-        final File droolsFile = new File(rulesFolder, "modeler_rules.drl");
+      File rulesFolder = new File(temporaryFolder.toFile(), "rules");
+      rulesFolder.mkdir(); // TODO test return value
+      final File droolsFile = new File(rulesFolder, "modeler_rules.drl");
 
-        FileOutputStream fos = new FileOutputStream(droolsFile);
+      FileOutputStream fos = new FileOutputStream(droolsFile);
+
       if (rulesConfiguration != null) {
-
         PrintWriter pw = new PrintWriter(fos);
-
         pw.print(rulesConfiguration.getValue());
         pw.close();
       }
-        fos.close();
-
+      fos.close();
 
     // Create openremote.zip
     // Return openremote.zip
 
-    StreamingOutput stream = new StreamingOutput() {
-      public void write(OutputStream output) throws IOException, WebApplicationException
-      {
-        try {
-
-          ZipOutputStream zipOutput = new ZipOutputStream(output);
-          writeZipEntry(zipOutput, panelXmlFile, temporaryFolder);
-          writeZipEntry(zipOutput, controllerXmlFile, temporaryFolder);
-          writeZipEntry(zipOutput, droolsFile, temporaryFolder);
-          zipOutput.close();
-        } catch (Exception e) {
-          throw new WebApplicationException(e);
+      StreamingOutput stream = new StreamingOutput() {
+        public void write(OutputStream output) throws IOException, WebApplicationException
+        {
+          try {
+            ZipOutputStream zipOutput = new ZipOutputStream(output);
+            writeZipEntry(zipOutput, panelXmlFile, temporaryFolder);
+            writeZipEntry(zipOutput, controllerXmlFile, temporaryFolder);
+            writeZipEntry(zipOutput, droolsFile, temporaryFolder);
+            zipOutput.close();
+          } catch (Exception e) {
+            throw new WebApplicationException(e);
+          }
         }
-      }
-    };
+      };
 
       // TODO: when can the temporary folder be deleted ?
 
@@ -160,18 +155,14 @@ public class UsersAPI
     }
 
     return null;
-
   }
 
   private void writeZipEntry(ZipOutputStream zipOutput, File file, java.nio.file.Path basePath) throws IOException
   {
     ZipEntry entry = new ZipEntry(basePath.relativize(file.toPath()).toString());
-
     entry.setSize(file.length());
     entry.setTime(file.lastModified());
-
     zipOutput.putNextEntry(entry);
-
 
     IOUtils.copy(new FileInputStream(file), zipOutput);
 
