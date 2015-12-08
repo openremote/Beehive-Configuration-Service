@@ -35,6 +35,8 @@ import org.openremote.beehive.configuration.model.SensorState;
 import org.openremote.beehive.configuration.model.persistence.jpa.MinimalPersistentUser;
 import org.openremote.beehive.configuration.repository.AccountRepository;
 import org.openremote.beehive.configuration.repository.MinimalPersistentUserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -84,6 +86,8 @@ import java.util.zip.ZipOutputStream;
 @Scope("prototype")
 public class UsersAPI
 {
+  private static final Logger log = LoggerFactory.getLogger(UsersAPI.class);
+
   @Context
   private ResourceContext resourceContext;
 
@@ -101,15 +105,17 @@ public class UsersAPI
   @Path("/{username}/openremote.zip")
   public Response getConfigurationFile(@PathParam("username") String username)
   {
-    System.out.println("Get configuration for user " + username);
+    log.info("Get configuration for user " + username);
 
     MinimalPersistentUser user = userRepository.findByUsername(username);
     if (user == null) {
+      log.error("Configuration requested for unknown user " + username);
       throw new NotFoundException();
     }
 
     Account account = accountRepository.findOne(user.getAccountId());
     if (account == null) {
+      log.error("Account not found for user " + username);
       throw new NotFoundException();
     }
 
@@ -152,6 +158,7 @@ public class UsersAPI
             writeZipEntry(zipOutput, droolsFile, temporaryFolder);
             zipOutput.close();
           } catch (Exception e) {
+            log.error("Impossible to stream openremote.zip file" ,e);
             throw new WebApplicationException(e);
           } finally
           {
@@ -166,8 +173,7 @@ public class UsersAPI
       return Response.ok(stream).header("content-disposition", "attachment; filename = \"openremote.zip\"").build();
     } catch (IOException e)
     {
-      // TODO: log
-      e.printStackTrace();
+      log.error("Issue creating openremote.zip file", e);
     }
     finally
     {
@@ -234,18 +240,15 @@ public class UsersAPI
       transformer.transform(input, output);
     } catch (ParserConfigurationException e)
     {
-      // TODO: log
-      e.printStackTrace();
+      log.error("Error generating controller.xml file", e);
       throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     } catch (TransformerConfigurationException e)
     {
-      // TODO: log
-      e.printStackTrace();
+      log.error("Error generating controller.xml file", e);
       throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     } catch (TransformerException e)
     {
-      // TODO: log
-      e.printStackTrace();
+      log.error("Error generating controller.xml file", e);
       throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     }
 
@@ -396,8 +399,7 @@ public class UsersAPI
       });
     } catch (IOException e)
     {
-      // TODO: log
-      e.printStackTrace();
+      log.error("Could not clean-up temporary folder used to create openremote.zip file", e);
     }
   }
 
