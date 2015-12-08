@@ -31,13 +31,15 @@ import org.openremote.beehive.configuration.model.ProtocolAttribute;
 import org.openremote.beehive.configuration.model.RangeSensor;
 import org.openremote.beehive.configuration.model.Sensor;
 import org.openremote.beehive.configuration.model.SensorState;
-import org.openremote.beehive.configuration.model.SensorType;
 import org.openremote.beehive.configuration.model.persistence.jpa.MinimalPersistentUser;
 import org.openremote.beehive.configuration.repository.AccountRepository;
 import org.openremote.beehive.configuration.repository.MinimalPersistentUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -49,10 +51,20 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.BufferedInputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -61,8 +73,6 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static org.openremote.beehive.configuration.model.SensorType.*;
 
 @Component
 @Path("/user")
@@ -190,20 +200,104 @@ public class UsersAPI
   {
     File controllerXmlFile = new File(temporaryFolder.toFile(), "controller.xml");
 
-    FileOutputStream fos = new FileOutputStream(controllerXmlFile);
-    PrintWriter pw = new PrintWriter(fos);
-    pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-    pw.println("<openremote xmlns=\"http://www.openremote.org\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.openremote.org http://www.openremote.org/schemas/controller.xsd\">");
-    pw.println("<components/>");
-    writeSensors(pw, account);
-    writeCommands(pw, account);
-    writeConfig(pw, account);
-    pw.println("</openremote>");
+    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+    try
+    {
+      DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+      DOMImplementation domImplementation = documentBuilder.getDOMImplementation();
+      Document document = domImplementation.createDocument("http://www.openremote.org", "openremote", null);
+      document.getDocumentElement().setAttributeNS("http://www.w3.org/2001/XMLSchema-instance",
+              "xsi:schemaLocation", "http://www.openremote.org http://www.openremote.org/schemas/controller.xsd");
 
-    pw.close();
-    fos.close();
+      Element componentsElement = document.createElement("components");
+      document.getDocumentElement().appendChild(componentsElement);
+      writeSensors(document, componentsElement, account);
+      writeCommands(document, componentsElement, account);
+      writeConfig(document, componentsElement, account);
+
+      Transformer transformer = TransformerFactory.newInstance().newTransformer();
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+      Result output = new StreamResult(controllerXmlFile);
+      Source input = new DOMSource(document);
+      transformer.transform(input, output);
+    } catch (ParserConfigurationException e)
+    {
+      e.printStackTrace();
+    } catch (TransformerConfigurationException e)
+    {
+      e.printStackTrace();
+    } catch (TransformerException e)
+    {
+      e.printStackTrace();
+    }
 
     return controllerXmlFile;
+  }
+
+  private void writeSensors(Document document, Element rootElement, Account account)
+  {
+    Element sensorsElement = document.createElement("sensors");
+    rootElement.appendChild(sensorsElement);
+
+    Collection<Device> devices = account.getDevices();
+
+    for (Device device : devices)
+    {
+      Collection<Sensor> sensors = device.getSensors();
+      for (Sensor sensor : sensors)
+      {
+        Element sensorElement = document.createElement("sensor");
+        sensorsElement.appendChild(sensorElement);
+        sensorElement.setAttribute("id", Long.toString(sensor.getId()));
+        sensorElement.setAttribute("name", sensor.getName());
+        sensorElement.setAttribute("type", sensor.getSensorType().toString().toLowerCase());
+
+        Element includeElement = document.createElement("include");
+        sensorElement.appendChild(includeElement);
+        includeElement.setAttribute("type", "command");
+        includeElement.setAttribute("ref", Long.toString(sensor.getSensorCommandReference().getCommand().getId()));
+
+        switch (sensor.getSensorType())
+        {
+          case RANGE:
+          {
+            Element minElement = document.createElement("min");
+            sensorElement.appendChild(minElement);
+            minElement.setAttribute("value", Integer.toString(((RangeSensor)sensor).getMinValue()));
+
+            Element maxElement = document.createElement("max");
+            sensorElement.appendChild(maxElement);
+            maxElement.setAttribute("value", Integer.toString(((RangeSensor)sensor).getMaxValue()));
+            break;
+          }
+          case SWITCH:
+          {
+            Element stateElement = document.createElement("state");
+            sensorElement.appendChild(stateElement);
+            stateElement.setAttribute("name", "on");
+
+            stateElement = document.createElement("state");
+            sensorElement.appendChild(stateElement);
+            stateElement.setAttribute("name", "off");
+            break;
+          }
+          case CUSTOM:
+          {
+            Collection<SensorState> states = sensor.getStates();
+            for (SensorState state : states)
+            {
+              Element stateElement = document.createElement("state");
+              sensorElement.appendChild(stateElement);
+              stateElement.setAttribute("name" , state.getName());
+              stateElement.setAttribute("value", state.getValue());
+            }
+            break;
+          }
+        }
+
+      }
+    }
   }
 
   private void writeSensors(PrintWriter pw, Account account)
@@ -248,6 +342,46 @@ public class UsersAPI
     pw.println("</sensors>");
   }
 
+  private void writeCommands(Document document, Element rootElement, Account account)
+  {
+    Element commandsElement = document.createElement("commands");
+    rootElement.appendChild(commandsElement);
+
+    Collection<Device> devices = account.getDevices();
+
+    for (Device device : devices) {
+      Collection<Command> commands = device.getCommands();
+      for (Command command : commands) {
+        Element commandElement = document.createElement("command");
+        commandsElement.appendChild(commandElement);
+        commandElement.setAttribute("id", Long.toString(command.getId()));
+        commandElement.setAttribute("protocol", command.getProtocol().getType());
+
+        Collection<ProtocolAttribute> attributes = command.getProtocol().getAttributes();
+        for (ProtocolAttribute attribute : attributes) {
+          Element propertyElement = document.createElement("property");
+          commandElement.appendChild(propertyElement);
+          propertyElement.setAttribute("name", attribute.getName());
+          propertyElement.setAttribute("value", attribute.getValue());
+        }
+        Element propertyElement = document.createElement("property");
+        commandElement.appendChild(propertyElement);
+        propertyElement.setAttribute("name", "name");
+        propertyElement.setAttribute("value", command.getName());
+
+        propertyElement = document.createElement("property");
+        commandElement.appendChild(propertyElement);
+        propertyElement.setAttribute("name", "urn:openremote:device-command:device-name");
+        propertyElement.setAttribute("value", command.getDevice().getName());
+
+        propertyElement = document.createElement("property");
+        commandElement.appendChild(propertyElement);
+        propertyElement.setAttribute("name", "urn:openremote:device-command:device-id");
+        propertyElement.setAttribute("value", Long.toString(command.getDevice().getId()));
+      }
+    }
+  }
+
   private void writeCommands(PrintWriter pw, Account account)
   {
     pw.println("<commands>");
@@ -268,6 +402,24 @@ public class UsersAPI
       }
     }
     pw.println("</commands>");
+  }
+
+  private void writeConfig(Document document, Element rootElement, Account account)
+  {
+    Element configElement = document.createElement("config");
+    rootElement.appendChild(configElement);
+
+    Collection<ControllerConfiguration> configurations = account.getControllerConfigurations();
+    for (ControllerConfiguration configuration : configurations) {
+      if (!"rules.editor".equals(configuration.getName()))
+      {
+        Element propertyElement = document.createElement("property");
+        configElement.appendChild(propertyElement);
+        propertyElement.setAttribute("name", configuration.getName());
+        propertyElement.setAttribute("value", configuration.getValue());
+      }
+    }
+
   }
 
   private void writeConfig(PrintWriter pw, Account account)
