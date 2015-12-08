@@ -23,6 +23,7 @@
 package org.openremote.beehive.configuration.www;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.model.Command;
 import org.openremote.beehive.configuration.model.ControllerConfiguration;
@@ -45,6 +46,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
@@ -69,7 +71,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -99,12 +104,21 @@ public class UsersAPI
     System.out.println("Get configuration for user " + username);
 
     MinimalPersistentUser user = userRepository.findByUsername(username);
+    if (user == null) {
+      throw new NotFoundException();
+    }
 
     Account account = accountRepository.findOne(user.getAccountId());
+    if (account == null) {
+      throw new NotFoundException();
+    }
+
+    java.nio.file.Path temporaryFolderForFinalCleanup = null;
     try
     {
       // Create temporary folder
       final java.nio.file.Path temporaryFolder = Files.createTempDirectory("OR");
+      temporaryFolderForFinalCleanup = temporaryFolder;
 
       // Create panel.xml file
       final File panelXmlFile = createPanelXmlFile(temporaryFolder);
@@ -127,9 +141,7 @@ public class UsersAPI
       }
       fos.close();
 
-    // Create openremote.zip
-    // Return openremote.zip
-
+      // Create and return openremote.zip file
       StreamingOutput stream = new StreamingOutput() {
         public void write(OutputStream output) throws IOException, WebApplicationException
         {
@@ -141,20 +153,28 @@ public class UsersAPI
             zipOutput.close();
           } catch (Exception e) {
             throw new WebApplicationException(e);
+          } finally
+          {
+            removeTemporaryFiles(temporaryFolder);
           }
         }
       };
 
-      // TODO: when can the temporary folder be deleted ?
-
+      // We've been able to build everything we need, set this to null so the cleanup is done
+      // after the streaming has been done and not before (in final block of this method)
+      temporaryFolderForFinalCleanup = null;
       return Response.ok(stream).header("content-disposition", "attachment; filename = \"openremote.zip\"").build();
-
     } catch (IOException e)
     {
+      // TODO: log
       e.printStackTrace();
     }
+    finally
+    {
+      removeTemporaryFiles(temporaryFolderForFinalCleanup);
+    }
 
-    return null;
+    return Response.serverError().build();
   }
 
   private void writeZipEntry(ZipOutputStream zipOutput, File file, java.nio.file.Path basePath) throws IOException
@@ -187,7 +207,7 @@ public class UsersAPI
     return panelXmlFile;
   }
 
-  private File createControllerXmlFile(java.nio.file.Path temporaryFolder, Account account) throws IOException
+  private File createControllerXmlFile(java.nio.file.Path temporaryFolder, Account account)
   {
     File controllerXmlFile = new File(temporaryFolder.toFile(), "controller.xml");
 
@@ -214,13 +234,19 @@ public class UsersAPI
       transformer.transform(input, output);
     } catch (ParserConfigurationException e)
     {
+      // TODO: log
       e.printStackTrace();
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     } catch (TransformerConfigurationException e)
     {
+      // TODO: log
       e.printStackTrace();
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     } catch (TransformerException e)
     {
+      // TODO: log
       e.printStackTrace();
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     }
 
     return controllerXmlFile;
@@ -346,6 +372,33 @@ public class UsersAPI
       }
     }
 
+  }
+
+  private void removeTemporaryFiles(java.nio.file.Path directory)
+  {
+    if (directory == null) {
+      return;
+    }
+    try
+    {
+      Files.walkFileTree(directory, new SimpleFileVisitor<java.nio.file.Path>() {
+        @Override
+        public FileVisitResult visitFile(java.nio.file.Path file, BasicFileAttributes attrs) throws IOException {
+          Files.delete(file);
+          return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(java.nio.file.Path dir, IOException exc) throws IOException {
+          Files.delete(dir);
+          return FileVisitResult.CONTINUE;
+        }
+      });
+    } catch (IOException e)
+    {
+      // TODO: log
+      e.printStackTrace();
+    }
   }
 
 }
