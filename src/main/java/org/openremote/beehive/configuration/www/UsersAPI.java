@@ -228,9 +228,9 @@ public class UsersAPI
 
       Element componentsElement = document.createElement("components");
       document.getDocumentElement().appendChild(componentsElement);
-      writeSensors(document, componentsElement, account);
-      writeCommands(document, componentsElement, account);
-      writeConfig(document, componentsElement, account);
+      writeSensors(document, document.getDocumentElement(), account);
+      writeCommands(document, document.getDocumentElement(), account);
+      writeConfig(document, document.getDocumentElement(), account);
 
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
       transformer.setOutputProperty(OutputKeys.INDENT, "yes");
