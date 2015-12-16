@@ -228,7 +228,7 @@ public class UsersAPI
 
       Element componentsElement = document.createElement("components");
       document.getDocumentElement().appendChild(componentsElement);
-      writeSensors(document, document.getDocumentElement(), account);
+      writeSensors(document, document.getDocumentElement(), account, findHighestCommandId(account));
       writeCommands(document, document.getDocumentElement(), account);
       writeConfig(document, document.getDocumentElement(), account);
 
@@ -255,7 +255,26 @@ public class UsersAPI
     return controllerXmlFile;
   }
 
-  private void writeSensors(Document document, Element rootElement, Account account)
+  private Long findHighestCommandId(Account account)
+  {
+    Long maxId = -1l;
+    Collection<Device> devices = account.getDevices();
+
+    for (Device device : devices)
+    {
+      Collection<Command> commands = device.getCommands();
+      for (Command command : commands)
+      {
+        if (command.getId() > maxId)
+        {
+          maxId = command.getId();
+        }
+      }
+    }
+    return  maxId;
+  }
+
+  private void writeSensors(Document document, Element rootElement, Account account, Long offset)
   {
     Element sensorsElement = document.createElement("sensors");
     rootElement.appendChild(sensorsElement);
@@ -269,7 +288,7 @@ public class UsersAPI
       {
         Element sensorElement = document.createElement("sensor");
         sensorsElement.appendChild(sensorElement);
-        sensorElement.setAttribute("id", Long.toString(sensor.getId()));
+        sensorElement.setAttribute("id", Long.toString(sensor.getId() + offset));
         sensorElement.setAttribute("name", sensor.getName());
         sensorElement.setAttribute("type", sensor.getSensorType().toString().toLowerCase());
 
