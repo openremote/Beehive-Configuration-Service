@@ -43,6 +43,7 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -55,6 +56,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -67,12 +69,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.SimpleFileVisitor;
@@ -86,6 +92,10 @@ import java.util.zip.ZipOutputStream;
 @Scope("prototype")
 public class UsersAPI
 {
+  private final static String CONTROLLER_XSD_PATH = "/controller-2.0-M7.xsd";
+
+  private final static String OPENREMOTE_NAMESPACE = "http://www.openremote.org";
+
   private static final Logger log = LoggerFactory.getLogger(UsersAPI.class);
 
   @Context
@@ -218,19 +228,36 @@ public class UsersAPI
     File controllerXmlFile = new File(temporaryFolder.toFile(), "controller.xml");
 
     DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+
     try
     {
+      documentBuilderFactory.setNamespaceAware(true);
       DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
       DOMImplementation domImplementation = documentBuilder.getDOMImplementation();
-      Document document = domImplementation.createDocument("http://www.openremote.org", "openremote", null);
+      Document document = domImplementation.createDocument(OPENREMOTE_NAMESPACE, "openremote", null);
       document.getDocumentElement().setAttributeNS("http://www.w3.org/2001/XMLSchema-instance",
               "xsi:schemaLocation", "http://www.openremote.org http://www.openremote.org/schemas/controller.xsd");
 
-      Element componentsElement = document.createElement("components");
+      Element componentsElement = document.createElementNS(OPENREMOTE_NAMESPACE, "components");
       document.getDocumentElement().appendChild(componentsElement);
       writeSensors(document, document.getDocumentElement(), account, findHighestCommandId(account));
       writeCommands(document, document.getDocumentElement(), account);
       writeConfig(document, document.getDocumentElement(), account);
+
+      // Document is fully built, validate against schema before writing to file
+      URL xsdResource = UsersAPI.class.getResource(CONTROLLER_XSD_PATH);
+      if (xsdResource == null)
+      {
+        log.error("Cannot find XSD schema ''{0}''. Disabling validation...", CONTROLLER_XSD_PATH);
+      }
+      else
+      {
+        String language = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+        SchemaFactory factory = SchemaFactory.newInstance(language);
+        Schema schema = factory.newSchema(xsdResource);
+        Validator validator = schema.newValidator();
+        validator.validate(new DOMSource(document));
+      }
 
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
       transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -247,6 +274,14 @@ public class UsersAPI
       log.error("Error generating controller.xml file", e);
       throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     } catch (TransformerException e)
+    {
+      log.error("Error generating controller.xml file", e);
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
+    } catch (SAXException e)
+    {
+      log.error("Error generating controller.xml file", e);
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
+    } catch (IOException e)
     {
       log.error("Error generating controller.xml file", e);
       throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -276,7 +311,7 @@ public class UsersAPI
 
   private void writeSensors(Document document, Element rootElement, Account account, Long offset)
   {
-    Element sensorsElement = document.createElement("sensors");
+    Element sensorsElement = document.createElementNS(OPENREMOTE_NAMESPACE, "sensors");
     rootElement.appendChild(sensorsElement);
 
     Collection<Device> devices = account.getDevices();
@@ -286,13 +321,13 @@ public class UsersAPI
       Collection<Sensor> sensors = device.getSensors();
       for (Sensor sensor : sensors)
       {
-        Element sensorElement = document.createElement("sensor");
+        Element sensorElement = document.createElementNS(OPENREMOTE_NAMESPACE, "sensor");
         sensorsElement.appendChild(sensorElement);
         sensorElement.setAttribute("id", Long.toString(sensor.getId() + offset));
         sensorElement.setAttribute("name", sensor.getName());
         sensorElement.setAttribute("type", sensor.getSensorType().toString().toLowerCase());
 
-        Element includeElement = document.createElement("include");
+        Element includeElement = document.createElementNS(OPENREMOTE_NAMESPACE, "include");
         sensorElement.appendChild(includeElement);
         includeElement.setAttribute("type", "command");
         includeElement.setAttribute("ref", Long.toString(sensor.getSensorCommandReference().getCommand().getId()));
@@ -301,22 +336,22 @@ public class UsersAPI
         {
           case RANGE:
           {
-            Element minElement = document.createElement("min");
+            Element minElement = document.createElementNS(OPENREMOTE_NAMESPACE, "min");
             sensorElement.appendChild(minElement);
             minElement.setAttribute("value", Integer.toString(((RangeSensor)sensor).getMinValue()));
 
-            Element maxElement = document.createElement("max");
+            Element maxElement = document.createElementNS(OPENREMOTE_NAMESPACE, "max");
             sensorElement.appendChild(maxElement);
             maxElement.setAttribute("value", Integer.toString(((RangeSensor)sensor).getMaxValue()));
             break;
           }
           case SWITCH:
           {
-            Element stateElement = document.createElement("state");
+            Element stateElement = document.createElementNS(OPENREMOTE_NAMESPACE, "state");
             sensorElement.appendChild(stateElement);
             stateElement.setAttribute("name", "on");
 
-            stateElement = document.createElement("state");
+            stateElement = document.createElementNS(OPENREMOTE_NAMESPACE, "state");
             sensorElement.appendChild(stateElement);
             stateElement.setAttribute("name", "off");
             break;
@@ -326,7 +361,7 @@ public class UsersAPI
             Collection<SensorState> states = sensor.getStates();
             for (SensorState state : states)
             {
-              Element stateElement = document.createElement("state");
+              Element stateElement = document.createElementNS(OPENREMOTE_NAMESPACE, "state");
               sensorElement.appendChild(stateElement);
               stateElement.setAttribute("name" , state.getName());
               stateElement.setAttribute("value", state.getValue());
@@ -340,7 +375,7 @@ public class UsersAPI
 
   private void writeCommands(Document document, Element rootElement, Account account)
   {
-    Element commandsElement = document.createElement("commands");
+    Element commandsElement = document.createElementNS(OPENREMOTE_NAMESPACE, "commands");
     rootElement.appendChild(commandsElement);
 
     Collection<Device> devices = account.getDevices();
@@ -348,29 +383,29 @@ public class UsersAPI
     for (Device device : devices) {
       Collection<Command> commands = device.getCommands();
       for (Command command : commands) {
-        Element commandElement = document.createElement("command");
+        Element commandElement = document.createElementNS(OPENREMOTE_NAMESPACE, "command");
         commandsElement.appendChild(commandElement);
         commandElement.setAttribute("id", Long.toString(command.getId()));
         commandElement.setAttribute("protocol", command.getProtocol().getType());
 
         Collection<ProtocolAttribute> attributes = command.getProtocol().getAttributes();
         for (ProtocolAttribute attribute : attributes) {
-          Element propertyElement = document.createElement("property");
+          Element propertyElement = document.createElementNS(OPENREMOTE_NAMESPACE, "property");
           commandElement.appendChild(propertyElement);
           propertyElement.setAttribute("name", attribute.getName());
           propertyElement.setAttribute("value", attribute.getValue());
         }
-        Element propertyElement = document.createElement("property");
+        Element propertyElement = document.createElementNS(OPENREMOTE_NAMESPACE, "property");
         commandElement.appendChild(propertyElement);
         propertyElement.setAttribute("name", "name");
         propertyElement.setAttribute("value", command.getName());
 
-        propertyElement = document.createElement("property");
+        propertyElement = document.createElementNS(OPENREMOTE_NAMESPACE, "property");
         commandElement.appendChild(propertyElement);
         propertyElement.setAttribute("name", "urn:openremote:device-command:device-name");
         propertyElement.setAttribute("value", command.getDevice().getName());
 
-        propertyElement = document.createElement("property");
+        propertyElement = document.createElementNS(OPENREMOTE_NAMESPACE, "property");
         commandElement.appendChild(propertyElement);
         propertyElement.setAttribute("name", "urn:openremote:device-command:device-id");
         propertyElement.setAttribute("value", Long.toString(command.getDevice().getId()));
@@ -380,14 +415,14 @@ public class UsersAPI
 
   private void writeConfig(Document document, Element rootElement, Account account)
   {
-    Element configElement = document.createElement("config");
+    Element configElement = document.createElementNS(OPENREMOTE_NAMESPACE, "config");
     rootElement.appendChild(configElement);
 
     Collection<ControllerConfiguration> configurations = account.getControllerConfigurations();
     for (ControllerConfiguration configuration : configurations) {
       if (!"rules.editor".equals(configuration.getName()))
       {
-        Element propertyElement = document.createElement("property");
+        Element propertyElement = document.createElementNS(OPENREMOTE_NAMESPACE, "property");
         configElement.appendChild(propertyElement);
         propertyElement.setAttribute("name", configuration.getName());
         propertyElement.setAttribute("value", configuration.getValue());
