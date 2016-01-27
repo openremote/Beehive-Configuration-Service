@@ -92,7 +92,7 @@ public class AccountsAPI {
         if (user == null) {
             throw new NotAuthorizedException("Basic realm=\"Beehive Configuration Service\"");
         }
-        if (user.getAccountId() != accountId) {
+        if (user.getAccountId() == null || !(user.getAccountId().equals(accountId))) {
             throw new ForbiddenException();
         }
     }
