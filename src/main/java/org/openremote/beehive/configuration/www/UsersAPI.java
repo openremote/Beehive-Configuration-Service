@@ -143,19 +143,7 @@ public class UsersAPI
       final File controllerXmlFile = createControllerXmlFile(temporaryFolder, account);
 
       // Create drools folder and rules file (rules/modeler_rules.drl)
-      ControllerConfiguration rulesConfiguration = account.getControllerConfigurationByName("rules.editor");
-      File rulesFolder = new File(temporaryFolder.toFile(), "rules");
-      rulesFolder.mkdir(); // TODO test return value
-      final File droolsFile = new File(rulesFolder, "modeler_rules.drl");
-
-      FileOutputStream fos = new FileOutputStream(droolsFile);
-
-      if (rulesConfiguration != null) {
-        PrintWriter pw = new PrintWriter(fos);
-        pw.print(rulesConfiguration.getValue());
-        pw.close();
-      }
-      fos.close();
+      final File droolsFile = createRules(temporaryFolder, account);
 
       // Create and return openremote.zip file
       StreamingOutput stream = new StreamingOutput() {
@@ -191,6 +179,24 @@ public class UsersAPI
     }
 
     return Response.serverError().build();
+  }
+
+  private File createRules(java.nio.file.Path temporaryFolder, Account account) throws IOException
+  {
+    ControllerConfiguration rulesConfiguration = account.getControllerConfigurationByName("rules.editor");
+    File rulesFolder = new File(temporaryFolder.toFile(), "rules");
+    rulesFolder.mkdir(); // TODO test return value
+    final File droolsFile = new File(rulesFolder, "modeler_rules.drl");
+
+    FileOutputStream fos = new FileOutputStream(droolsFile);
+
+    if (rulesConfiguration != null) {
+      PrintWriter pw = new PrintWriter(fos);
+      pw.print(rulesConfiguration.getValue());
+      pw.close();
+    }
+    fos.close();
+    return droolsFile;
   }
 
   private void writeZipEntry(ZipOutputStream zipOutput, File file, java.nio.file.Path basePath) throws IOException
