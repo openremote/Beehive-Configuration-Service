@@ -22,7 +22,15 @@
  */
 package org.openremote.beehive.configuration.www;
 
-import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.apache.commons.io.FileUtils;
+
+import org.apache.commons.io.IOUtils;
+import org.drools.compiler.kie.builder.impl.InternalKieModule;
+import org.kie.api.KieServices;
+import org.kie.api.builder.KieBuilder;
+import org.kie.api.builder.KieFileSystem;
+import org.kie.api.builder.ReleaseId;
+import org.kie.api.builder.model.KieModuleModel;
 import org.openremote.beehive.configuration.exception.NotFoundException;
 import org.openremote.beehive.configuration.model.Account;
 import org.openremote.beehive.configuration.model.Command;
@@ -153,7 +161,10 @@ public class UsersAPI
             ZipOutputStream zipOutput = new ZipOutputStream(output);
             writeZipEntry(zipOutput, panelXmlFile, temporaryFolder);
             writeZipEntry(zipOutput, controllerXmlFile, temporaryFolder);
-            writeZipEntry(zipOutput, droolsFile, temporaryFolder);
+            if (droolsFile != null)
+            {
+              writeZipEntry(zipOutput, droolsFile, temporaryFolder);
+            }
             zipOutput.close();
           } catch (Exception e) {
             log.error("Impossible to stream openremote.zip file" ,e);
@@ -196,7 +207,36 @@ public class UsersAPI
       pw.close();
     }
     fos.close();
-    return droolsFile;
+
+    KieServices ks = KieServices.Factory.get();
+
+    KieFileSystem kfs = ks.newKieFileSystem();
+
+    KieModuleModel kproj = ks.newKieModuleModel();
+    kfs.writeKModuleXML(kproj.toXML());
+
+    ReleaseId releaseId = ks.newReleaseId("org.openremote.controller", "rules", "1.0");
+    kfs.generateAndWritePomXML(releaseId);
+
+    kfs.write("src/main/resources/modeler_rules.drl", rulesConfiguration.getValue());
+
+    KieBuilder kb = ks.newKieBuilder(kfs).buildAll();
+
+    // TODO: check for errors
+        if( kb.getResults().hasMessages( org.kie.api.builder.Message.Level.ERROR ) ) {
+            for( org.kie.api.builder.Message result : kb.getResults().getMessages() ) {
+                System.out.println(result.getText());
+              return null;
+            }
+        }
+
+
+    final File kjarFile = new File(rulesFolder, "modeler_rules.kjar");
+
+    InternalKieModule kieModule = (InternalKieModule) ks.getRepository().getKieModule(releaseId);
+    FileUtils.writeByteArrayToFile(kjarFile, kieModule.getBytes());
+
+    return kjarFile;
   }
 
   private void writeZipEntry(ZipOutputStream zipOutput, File file, java.nio.file.Path basePath) throws IOException
