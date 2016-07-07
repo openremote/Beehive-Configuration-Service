@@ -28,6 +28,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "account")
@@ -131,6 +132,23 @@ public class Account extends AbstractEntity {
             }
         }
         return null;
+    }
+
+    public Collection<ControllerConfiguration> getControllerConfigurationsByNameAndCategory(String name, String category) {
+        Collection<ControllerConfiguration> controllerConfigurations = getControllerConfigurations();
+        if (name == null && category == null) {
+            return controllerConfigurations;
+        }
+
+        List<ControllerConfiguration> configurations = new ArrayList<>();
+        for (ControllerConfiguration controllerConfiguration : controllerConfigurations) {
+            boolean nameOk = name == null || name.equals(controllerConfiguration.getName());
+            boolean categoryOk = category == null || category.equals(controllerConfiguration.getCategory());
+            if (nameOk && categoryOk) {
+                configurations.add(controllerConfiguration);
+            }
+        }
+        return configurations;
     }
 
 }

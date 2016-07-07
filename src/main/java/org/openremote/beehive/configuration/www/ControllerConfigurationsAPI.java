@@ -34,12 +34,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -72,8 +67,8 @@ public class ControllerConfigurationsAPI
   }
 
   @GET
-  public Collection<ControllerConfigurationDTOOut> list() {
-    Collection<ControllerConfiguration> configurations = account.getControllerConfigurations();
+  public Collection<ControllerConfigurationDTOOut> list(@QueryParam("category")String category, @QueryParam("name")String name) {
+    Collection<ControllerConfiguration> configurations = account.getControllerConfigurationsByNameAndCategory(name, category);
     Collection<ControllerConfigurationDTOOut> configurationDTOs = new ArrayList<ControllerConfigurationDTOOut>();
     for (ControllerConfiguration configuration : configurations)
     {
