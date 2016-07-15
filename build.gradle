@@ -67,5 +67,5 @@ task createDockerFile(type:Dockerfile, dependsOn: build) {
 task buildImage(type: DockerBuildImage, dependsOn: createDockerFile) {
     inputDir = projectDir
     dockerFile = createDockerFile.destFile
-    tag = 'openremote/beehive-device-discovery'
+    tag = 'openremote/beehive-configuration-service'
 }
