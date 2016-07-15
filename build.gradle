@@ -1,0 +1,71 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+        classpath("com.bmuschko:gradle-docker-plugin:$dockerPluginVersion")
+    }
+}
+
+apply plugin: 'spring-boot'
+apply plugin: 'java'
+apply plugin: 'war'
+
+group = 'org.openremote'
+version = projectVersion
+
+description = """beehive-configuration-service Maven Webapp"""
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+
+bootRepackage {
+    jar.enabled = false
+}
+
+repositories {
+        
+     maven { url "http://m2repo.openremote.com/content/groups/public" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version:springBootVersion
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:springBootVersion
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version:springBootVersion
+    compile group: 'commons-io', name: 'commons-io', version:commonsIOVersion
+    compile group: 'org.kie', name: 'kie-api', version:droolsVersion
+    compile group: 'org.drools', name: 'drools-compiler', version:droolsVersion
+    compile group: 'org.drools', name: 'drools-core', version:droolsVersion
+    compile group: 'org.openremote', name: 'or-controller', version:openremoteVersion
+    runtime group: 'com.google.guava', name: 'guava', version:guavaVersion
+    testCompile group: 'junit', name: 'junit', version:jUnitVersion
+    testCompile group: 'org.mockito', name: 'mockito-all', version:mockitoVersion
+    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version:hamcrestVersion
+    providedRuntime group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version:springBootVersion
+}
+
+apply plugin: "com.bmuschko.docker-remote-api"
+
+docker {
+    url = "$System.env.DOCKER_HOST".replace("tcp:", "https:")
+    certPath = new File("$System.env.DOCKER_CERT_PATH")
+}
+
+
+import com.bmuschko.gradle.docker.tasks.image.*
+
+task createDockerFile(type:Dockerfile, dependsOn: build) {
+    destFile = project.file("$project.buildDir/install/Dockerfile")
+    from "openremote/tomcat-base"
+    addFile projectDir.toPath().relativize(war.archivePath.toPath()).toString(), "webapps/"
+}
+
+task buildImage(type: DockerBuildImage, dependsOn: createDockerFile) {
+    inputDir = projectDir
+    dockerFile = createDockerFile.destFile
+    tag = 'openremote/beehive-device-discovery'
+}
