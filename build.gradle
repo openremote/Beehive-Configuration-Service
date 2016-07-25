@@ -50,6 +50,10 @@ dependencies {
     providedRuntime group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version:springBootVersion
 }
 
+war {
+    archiveName = 'beehive-configuration-service.war'
+}
+
 apply plugin: "com.bmuschko.docker-remote-api"
 
 docker {
