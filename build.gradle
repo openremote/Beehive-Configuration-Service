@@ -30,8 +30,10 @@ bootRepackage {
 repositories {
      jcenter()
      mavenCentral()
-        
-     maven { url "http://m2repo.openremote.com/content/groups/public" }
+
+    maven {
+        url "https://pkgs.dev.azure.com/OpenRemote/OpenRemote/_packaging/OpenRemote/maven/v1"
+    }
 }
 
 dependencies {
